@@ -1,0 +1,11 @@
+body {
+    background-color: #121212; /* Dark mode */
+    margin: 0;
+    padding: 0;
+}
+
+#top-bar {
+    background-color: #0000FF; /* Blue color */
+    height: 50px;
+    width: 100%;
+}
