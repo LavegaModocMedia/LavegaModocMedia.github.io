@@ -17,13 +17,19 @@
         body {
             background-color: #000; /* Dark mode background color */
             transition: background-color 0.5s ease; /* Smooth transition effect */
+            margin: 0; /* Remove default body margin */
         }
         .toggle-button {
             background-image: url('https://static-00.iconduck.com/assets.00/dark-theme-icon-512x512-185rlszm.png');
-            width: 100px;
-            height: 100px;
+            background-size: contain; /* Make the image sizeable */
+            background-repeat: no-repeat;
+            width: 50px; /* Set your desired button width */
+            height: 50px; /* Set your desired button height */
             border: none;
             cursor: pointer;
+            position: absolute; /* Position the button */
+            top: 0; /* Align to the top */
+            right: 0; /* Align to the right */
         }
     </style>
 </head>
