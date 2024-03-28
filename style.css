@@ -20,15 +20,6 @@ body {
     top: 0; /* Position at the top */
 }
 
-.container {
-    background-color: #444; /* You can adjust the container background color */
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 500px;
-    text-align: center;
-}
-
 button {
     display: flex;
     padding: 10px;
