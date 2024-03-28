@@ -20,19 +20,3 @@ body {
     top: 0; /* Position at the top */
 }
 
-button {
-    display: flex;
-    padding: 10px;
-    background-color: #30db05;
-    color: #000000;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    text-decoration: none;
-    margin-top: 10px;
-}
-
-button:hover {
-    background-color: #1f630e;
-}
