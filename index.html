@@ -10,6 +10,8 @@
 <body>
     <div id="topbar"></div>
 </body>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +29,13 @@
         }
 
         /* Slider styles */
+        .slider-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
         .slider {
             position: relative;
             display: inline-block;
@@ -74,10 +83,12 @@
     </style>
 </head>
 <body class="light-mode">
-    <label class="switch">
-        <input type="checkbox" id="modeToggle">
-        <span class="slider slider-round"></span>
-    </label>
+    <div class="slider-container">
+        <label class="switch">
+            <input type="checkbox" id="modeToggle">
+            <span class="slider slider-round"></span>
+        </label>
+    </div>
 
     <script>
         const modeToggle = document.getElementById('modeToggle');
