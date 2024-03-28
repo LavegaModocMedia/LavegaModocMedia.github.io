@@ -13,15 +13,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title> Toggle Button With Dark/Light Mode </title>
-    <!---Custom CSS File--->
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <input type="checkbox" id="dark-mode">
-    <label for="dark-mode"></label>
-    <div class="background"></div>
-  </body>
-  </html>
+    <style>
+        body {
+            background-color: #000; /* Dark mode background color */
+            transition: background-color 0.5s ease; /* Smooth transition effect */
+        }
+        .toggle-button {
+            background-image: url('https://static-00.iconduck.com/assets.00/dark-theme-icon-512x512-185rlszm.png');
+            width: 100px;
+            height: 100px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-button" onclick="toggleBackground()"></button>
+
+    <script>
+        function toggleBackground() {
+            const body = document.body;
+            body.style.backgroundColor = body.style.backgroundColor === 'rgb(0, 0, 0)' ? '#fff' : '#000';
+        }
+    </script>
+</body>
 </html>
