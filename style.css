@@ -15,7 +15,7 @@ body {
 #topbar {
     background-color: #0000FF; /* Blue color */
     height: 500px;
-    width: 100%;
+    width: 10%;
     position: fixed; /* Fix position */
     top: 50; /* Position at the top */
 }
