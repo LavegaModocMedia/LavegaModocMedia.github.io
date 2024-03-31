@@ -10,38 +10,9 @@
 <body>
     <div id="topbar"></div>
 </body>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            background-color: #000; /* Dark mode background color */
-            transition: background-color 0.5s ease; /* Smooth transition effect */
-            margin: 0; /* Remove default body margin */
-        }
-        .toggle-button {
-            background-image: url('https://i.ibb.co/2PZHJhY/modocmedia-modified.png');
-            background-size: contain; /* Make the image sizeable */
-            background-repeat: no-repeat;
-            width: 50px; /* Set your desired button width */
-            height: 50px; /* Set your desired button height */
-            border: none;
-            cursor: pointer;
-            position: absolute; /* Position the button */
-            top: 10px; /* Align to the top */
-            left: 10px; /* Align to the left */
-            border-radius: 100%; /* Make the button circular */
-        }
-    </style>
-</head>
-<body>
-    <button class="toggle-button" onclick="toggleBackground()"></button>
+<a href="index.html" style="position: absolute; top: 0; left: 0;">
+    <button style="background: url('https://i.ibb.co/2PZHJhY/modocmedia-modified.png') no-repeat; width: 200px; height: 200px;">
+    </button>
+</a>
 
-    <script>
-        function toggleBackground() {
-            const body = document.body;
-            body.style.backgroundColor = body.style.backgroundColor === 'rgb(0, 0, 0)' ? '#fff' : '#000';
-        }
-    </script>
-</body>
 </html>
