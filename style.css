@@ -12,11 +12,4 @@ body {
     color: #000000; 
 }
 
-#topbar {
-    background-color: #03387c; 
-    height: 300px;
-    width: 100%;
-    position: fixed;
-    top: 3;
-}
 
