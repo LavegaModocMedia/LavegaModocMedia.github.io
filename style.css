@@ -6,10 +6,6 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    overflow-y: scroll;
     background-color: #ffffff; /* oringial was #333 */
     color: #000000; 
-}
-body {
-    height: 2000px;
-    overflow-y: scroll;
-}
