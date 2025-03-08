@@ -6,12 +6,20 @@
         <link rel="stylesheet" type="text/css" href="style.css">
         <title>Modoc Media</title>
         <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
             #topbar {
                 background-color: #03387c; 
                 height: 125px;
                 width: 100%;
                 position: fixed;
                 top: 0px;
+                display: flex;
+                align-items: center;
+                padding-left: 10px;
+                z-index: 2;
             }
             #lowerbar {
                 background-color: #ffb81c; 
@@ -19,6 +27,7 @@
                 width: 100%;
                 position: fixed;
                 top: 124px;
+                z-index: 2;
             }
             #Bottombox {
                 background-color: #242424; 
@@ -27,11 +36,61 @@
                 position: fixed;
                 bottom: -500px;
             }
+            #menuButton {
+                background-color: #ffb81c;
+                border: none;
+                padding: 10px 15px;
+                font-size: 18px;
+                cursor: pointer;
+                color: white;
+                border-radius: 5px;
+            }
+            #sideMenu {
+                position: fixed;
+                top: 130px;
+                left: -250px;
+                width: 250px;
+                height: calc(100% - 130px);
+                background-color: #242424;
+                transition: 0.3s;
+                padding-top: 20px;
+                box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
+                z-index: 1;
+            }
+            #sideMenu a {
+                display: block;
+                padding: 10px;
+                color: white;
+                text-decoration: none;
+            }
+            #sideMenu a:hover {
+                background-color: #575757;
+            }
         </style>
     </head>
     <body>
-        <div id="topbar"></div>
+        <div id="topbar">
+            <button id="menuButton" onclick="toggleMenu()">☰</button>
+        </div>
         <div id="lowerbar"></div>
         <div id="Bottombox"></div>
+        
+        <div id="sideMenu">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Contact</a>
+        </div>
+        
+        <script>
+            function toggleMenu() {
+                let menu = document.getElementById("sideMenu");
+                if (menu.style.left === "0px") {
+                    menu.style.left = "-250px";
+                } else {
+                    menu.style.left = "0px";
+                }
+            }
+        </script>
     </body>
 </html>
