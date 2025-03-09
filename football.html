@@ -30,6 +30,51 @@
                 top: 124px;
                 z-index: 2;
             }
+            #menuButton {
+                background-color: #ffb81c;
+                border: none;
+                padding: 10px 15px;
+                font-size: 18px;
+                cursor: pointer;
+                color: white;
+                border-radius: 5px;
+            }
+            .CateButton {
+                background-color: #242424;
+                border: none;
+                padding: 10px 15px;
+                font-size: 18px;
+                cursor: pointer;
+                color: white;
+                border-radius: 5px;
+                display: block;
+                text-align: center;
+                margin: 5px auto;
+                width: 80%;
+                text-decoration: none;
+            }
+            .CateButton:hover {
+                background-color: #575757;
+            }
+            #sideMenu {
+                position: fixed;
+                top: 130px;
+                left: -250px;
+                width: 250px;
+                height: calc(100% - 130px);
+                background-color: #242424;
+                transition: left 0.3s;
+                padding-top: 20px;
+                box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
+                z-index: 1;
+                text-align: center;
+            }
+            #sideMenu h2 {
+                color: white;
+                margin: 10px 0;
+                font-size: 20px;
+            }
+            
             /* Responsive Design */
             @media screen and (max-width: 600px) {
                 #topbar {
@@ -39,16 +84,44 @@
                 #lowerbar {
                     top: 99px;
                 }
+                #sideMenu {
+                    top: 105px;
+                    width: 200px;
+                    height: calc(100% - 105px);
+                }
+                #menuButton {
+                    font-size: 16px;
+                    padding: 8px 12px;
+                }
             }
         </style>
     </head>
     <body>
         <div id="topbar">
-            <!-- Menu button removed -->
+            <button id="menuButton" onclick="toggleMenu()">☰</button>
         </div>
         <div id="lowerbar"></div>
       
+        <div id="sideMenu">
+            <h2>Category</h2>
+            <a href="football.html" class="CateButton">Football</a>
+            <a href="basketball.html" class="CateButton">Basketball</a>
+            <a href="soccer.html" class="CateButton">Soccer</a>
+            <a href="other.html" class="CateButton">Other</a>            
+        </div>
+        
         <script>
+            function toggleMenu() {
+                let menu = document.getElementById("sideMenu");
+                let menuLeft = window.getComputedStyle(menu).left;
+
+                if (menuLeft === "0px") {
+                    menu.style.left = "-250px";
+                } else {
+                    menu.style.left = "0px";
+                }
+            }
+            
             // Detect device type and apply custom behavior
             function detectDevice() {
                 if (window.innerWidth <= 600) {
