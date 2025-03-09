@@ -72,6 +72,26 @@
             #sideMenu a:hover {
                 background-color: #575757;
             }
+            
+            /* Responsive Design */
+            @media screen and (max-width: 600px) {
+                #topbar {
+                    height: 100px;
+                    padding-left: 5px;
+                }
+                #lowerbar {
+                    top: 99px;
+                }
+                #sideMenu {
+                    top: 105px;
+                    width: 200px;
+                    height: calc(100% - 105px);
+                }
+                #menuButton {
+                    font-size: 16px;
+                    padding: 8px 12px;
+                }
+            }
         </style>
     </head>
     <body>
