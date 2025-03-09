@@ -118,6 +118,21 @@
                     menu.style.left = "0px";
                 }
             }
+            
+            // Detect device type and apply custom behavior
+            function detectDevice() {
+                if (window.innerWidth <= 600) {
+                    console.log("Mobile Device Detected");
+                    document.body.style.backgroundColor = "#f4f4f4";
+                } else {
+                    console.log("Desktop/Laptop Detected");
+                    document.body.style.backgroundColor = "#ffffff";
+                }
+            }
+            
+            // Run on load and when window resizes
+            window.onload = detectDevice;
+            window.onresize = detectDevice;
         </script>
     </body>
 </html>
