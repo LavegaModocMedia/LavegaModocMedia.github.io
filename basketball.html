@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Modoc Media</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            #topbar {
+                background-color: #03387c; 
+                height: 125px;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: 1.6%;
+                z-index: 2;
+            }
+            #lowerbar {
+                background-color: #ffb81c; 
+                height: 6px;
+                width: 100%;
+                position: fixed;
+                top: 124px;
+                z-index: 2;
+            }
+            /* Responsive Design */
+            @media screen and (max-width: 600px) {
+                #topbar {
+                    height: 100px;
+                    padding-left: 5%;
+                }
+                #lowerbar {
+                    top: 99px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="topbar">
+            <!-- Menu button removed -->
+        </div>
+        <div id="lowerbar"></div>
+      
+        <script>
+            // Detect device type and apply custom behavior
+            function detectDevice() {
+                if (window.innerWidth <= 600) {
+                    console.log("Mobile Device Detected");
+                    document.body.style.backgroundColor = "#f4f4f4";
+                } else {
+                    console.log("Desktop/Laptop Detected");
+                    document.body.style.backgroundColor = "#ffffff";
+                }
+            }
+            
+            // Run on load and when window resizes
+            window.onload = detectDevice;
+            window.onresize = detectDevice;
+        </script>
+    </body>
+</html>
