@@ -15,7 +15,7 @@
                 height: 125px;
                 width: 100%;
                 position: fixed;
-                top: 0px;
+                top: 0;
                 display: flex;
                 align-items: center;
                 justify-content: flex-start;
@@ -35,7 +35,7 @@
                 height: 125px;
                 width: 100%;
                 position: fixed;
-                bottom: -500px;
+                bottom: 0;
             }
             #menuButton {
                 background-color: #ffb81c;
@@ -46,7 +46,7 @@
                 color: white;
                 border-radius: 5px;
             }
-            #CateButton {
+            .CateButton {
                 background-color: #242424;
                 border: none;
                 padding: 10px 15px;
@@ -54,6 +54,14 @@
                 cursor: pointer;
                 color: white;
                 border-radius: 5px;
+                display: block;
+                text-align: center;
+                margin: 5px auto;
+                width: 80%;
+                text-decoration: none;
+            }
+            .CateButton:hover {
+                background-color: #575757;
             }
             #sideMenu {
                 position: fixed;
@@ -62,7 +70,7 @@
                 width: 250px;
                 height: calc(100% - 130px);
                 background-color: #242424;
-                transition: 0.3s;
+                transition: left 0.3s;
                 padding-top: 20px;
                 box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
                 z-index: 1;
@@ -72,15 +80,6 @@
                 color: white;
                 margin: 10px 0;
                 font-size: 20px;
-            }
-            #sideMenu a {
-                display: block;
-                padding: 10px;
-                color: white;
-                text-decoration: none;
-            }
-            #sideMenu a:hover {
-                background-color: #575757;
             }
             
             /* Responsive Design */
@@ -122,7 +121,9 @@
         <script>
             function toggleMenu() {
                 let menu = document.getElementById("sideMenu");
-                if (menu.style.left === "0px") {
+                let menuLeft = window.getComputedStyle(menu).left;
+
+                if (menuLeft === "0px") {
                     menu.style.left = "-250px";
                 } else {
                     menu.style.left = "0px";
