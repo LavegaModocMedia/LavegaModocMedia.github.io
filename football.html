@@ -9,6 +9,7 @@
             body {
                 margin: 0;
                 font-family: Arial, sans-serif;
+                overflow: hidden; /* Disable scrolling */
             }
             #topbar {
                 background-color: #03387c; 
@@ -74,6 +75,17 @@
                 margin: 10px 0;
                 font-size: 20px;
             }
+            #leftContainer {
+                position: absolute;
+                top: 135px;
+                left: 45px;
+                width: 500px;
+                height: 500px;
+                background-color: rgb(0, 128, 255);
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 20px;
+            }
             
             /* Responsive Design */
             @media screen and (max-width: 600px) {
@@ -93,6 +105,17 @@
                     font-size: 16px;
                     padding: 8px 12px;
                 }
+                #leftContainer {
+                position: absolute;
+                top: 135px;
+                left: 45px;
+                width: 500px;
+                height: 500px;
+                background-color: rgb(0, 128, 255);
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 20px;
+                }
             }
         </style>
     </head>
@@ -101,7 +124,9 @@
             <button id="menuButton" onclick="toggleMenu()">☰</button>
         </div>
         <div id="lowerbar"></div>
-      
+        
+        <div id="leftContainer"></div>
+        
         <div id="sideMenu">
             <h2>Category</h2>
             <a href="football.html" class="CateButton">Football</a>
