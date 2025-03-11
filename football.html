@@ -84,7 +84,14 @@
                 background-color: rgb(0, 128, 255);
                 box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
                 border-radius: 10px;
-                padding: 20px;
+                padding: 0; /* No padding needed */
+                overflow: hidden;
+            }
+            .iframeContent {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: none;
             }
             #dropdownMenu {
                 position: absolute;
@@ -117,10 +124,6 @@
                     left: 20px;
                     width: 300px;
                     height: 200px;
-                    background-color: rgb(0, 128, 255);
-                    border-radius: 10px;
-                    padding: 20px;
-                    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
                 }
                 #dropdownMenu {
                     top: 380px;
@@ -137,13 +140,17 @@
         </div>
         <div id="lowerbar"></div>
         
-        <div id="leftContainer"></div>
+        <div id="leftContainer">
+            <iframe id="stadium" class="iframeContent" src="https://clevr.me/lavegastadium" title="La Vega Stadium"></iframe>
+            <iframe id="gym" class="iframeContent" src="https://my.clevr.media/modocmedia" title="Gym"></iframe>
+            <iframe id="lavegaisd" class="iframeContent" src="lavegaisd" title="La Vega ISD"></iframe>
+        </div>
         
-        <select id="dropdownMenu">
-            <option value="option1">Choose Stream</option>
-            <option value="option2">Stadium</option>
-            <option value="option3">Gym</option>
-            <option value="option4">La Vega ISD</option>
+        <select id="dropdownMenu" onchange="changeIframe()">
+            <option value="">Choose Stream</option>
+            <option value="stadium">Stadium</option>
+            <option value="gym">Gym</option>
+            <option value="lavegaisd">La Vega ISD</option>
         </select>
         
         <div id="sideMenu">
@@ -158,26 +165,18 @@
             function toggleMenu() {
                 let menu = document.getElementById("sideMenu");
                 let menuLeft = window.getComputedStyle(menu).left;
-
-                if (menuLeft === "0px") {
-                    menu.style.left = "-250px";
-                } else {
-                    menu.style.left = "0px";
-                }
+                menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
             }
             
-            function detectDevice() {
-                if (window.innerWidth <= 600) {
-                    console.log("Mobile Device Detected");
-                    document.body.style.backgroundColor = "#f4f4f4";
-                } else {
-                    console.log("Desktop/Laptop Detected");
-                    document.body.style.backgroundColor = "#ffffff";
+            function changeIframe() {
+                let iframes = document.querySelectorAll(".iframeContent");
+                iframes.forEach(iframe => iframe.style.display = "none");
+                
+                let selected = document.getElementById("dropdownMenu").value;
+                if (selected) {
+                    document.getElementById(selected).style.display = "block";
                 }
             }
-            
-            window.onload = detectDevice;
-            window.onresize = detectDevice;
         </script>
     </body>
 </html>
