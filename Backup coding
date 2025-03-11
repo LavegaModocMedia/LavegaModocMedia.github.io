@@ -1,6 +1,28 @@
- <iframe src="https://clevr.me/lavegastadium" title="La Vega Stadium Stream"></iframe>
+#leftContainer {
+    position: absolute;
+    top: 145px;
+    left: 45px;
+    width: 546px;
+    height: 320px;
+    background-color: rgb(0, 128, 255);
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 0; /* No padding needed */
+    overflow: hidden;
+}
 
 
-
- Football.html coding: 
- 
+#leftContainer {
+    position: absolute;
+    top: 145px;
+    left: 45px;
+    width: 546px;
+    height: 320px;
+    background-color: rgb(0, 128, 255);
+    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.3); /* Increased shadow for depth */
+    border-radius: 10px;
+    padding: 20px; /* Added padding for more presence */
+    overflow: hidden;
+    transform: scale(1.2); /* Enlarges container by 20% */
+    transform-origin: center; /* Ensures it scales from the center */
+}
