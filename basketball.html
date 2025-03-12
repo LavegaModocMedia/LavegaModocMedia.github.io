@@ -9,6 +9,7 @@
             body {
                 margin: 0;
                 font-family: Arial, sans-serif;
+                overflow: hidden; /* Disable scrolling */
             }
             #topbar {
                 background-color: #03387c; 
@@ -74,7 +75,33 @@
                 margin: 10px 0;
                 font-size: 20px;
             }
-            
+            #leftContainer {
+                position: absolute;
+                top: 185px;
+                left: 45px;
+                width: 546px;
+                height: 320px;
+                background-color: rgb(0, 128, 255);
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 0; /* No padding needed */
+                overflow: hidden;
+            }
+
+            .iframeContent {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: none;
+            }
+            #dropdownMenu {
+                position: absolute;
+                top: 540px;
+                left: 45px;
+                width: 180px;
+                padding: 5px;
+                font-size: 14px;
+            }
             /* Responsive Design */
             @media screen and (max-width: 600px) {
                 #topbar {
@@ -93,6 +120,18 @@
                     font-size: 16px;
                     padding: 8px 12px;
                 }
+                #leftContainer {
+                    top: 165px;
+                    left: 30px;
+                    width: 330px;
+                    height: 185px;
+                }
+                #dropdownMenu {
+                    top: 356px;
+                    left: 30px;
+                    width: 175px;
+                    font-size: 12px;
+                }
             }
         </style>
     </head>
@@ -101,7 +140,20 @@
             <button id="menuButton" onclick="toggleMenu()">☰</button>
         </div>
         <div id="lowerbar"></div>
-      
+        
+        <div id="leftContainer">
+            <iframe id="stadium" class="iframeContent" src="https://my.clevr.media/lavegastadium" title="La Vega Stadium"></iframe>
+            <iframe id="gym" class="iframeContent" src="https://my.clevr.media/modocmedia" title="Gym"></iframe>
+            <iframe id="lavegaisd" class="iframeContent" src="https://my.clevr.media/lavegaisd" title="La Vega ISD"></iframe>
+        </div>
+        
+        <select id="dropdownMenu" onchange="changeIframe()">
+            <option value="">Choose Stream</option>
+            <option value="stadium">Stadium</option>
+            <option value="gym">Gym</option>
+            <option value="lavegaisd">La Vega ISD</option>
+        </select>
+        
         <div id="sideMenu">
             <h2>Category</h2>
             <a href="football.html" class="CateButton">Football</a>
@@ -114,28 +166,18 @@
             function toggleMenu() {
                 let menu = document.getElementById("sideMenu");
                 let menuLeft = window.getComputedStyle(menu).left;
-
-                if (menuLeft === "0px") {
-                    menu.style.left = "-250px";
-                } else {
-                    menu.style.left = "0px";
-                }
+                menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
             }
             
-            // Detect device type and apply custom behavior
-            function detectDevice() {
-                if (window.innerWidth <= 600) {
-                    console.log("Mobile Device Detected");
-                    document.body.style.backgroundColor = "#f4f4f4";
-                } else {
-                    console.log("Desktop/Laptop Detected");
-                    document.body.style.backgroundColor = "#ffffff";
+            function changeIframe() {
+                let iframes = document.querySelectorAll(".iframeContent");
+                iframes.forEach(iframe => iframe.style.display = "none");
+                
+                let selected = document.getElementById("dropdownMenu").value;
+                if (selected) {
+                    document.getElementById(selected).style.display = "block";
                 }
             }
-            
-            // Run on load and when window resizes
-            window.onload = detectDevice;
-            window.onresize = detectDevice;
         </script>
     </body>
 </html>
