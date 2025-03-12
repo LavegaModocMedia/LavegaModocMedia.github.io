@@ -92,15 +92,41 @@
                 position: absolute;
                 top: 185px;
                 right: 45px;
-                width: 546px;
+                width: 650px;
                 height: 320px;
-                background-color: rgb(0, 0, 0);
+                background-color: white;
                 box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
                 border-radius: 10px;
-                padding: 0; /* No padding needed */
+                padding: 0px; /* Small padding for spacing */
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
-
+            
+            #scrollableList {
+                flex-grow: 1;
+                overflow-y: auto; /* Enables vertical scrolling */
+                max-height: 100%; /* Restricts scrolling within container */
+                padding: 5px;
+                background-color: rgba(224, 224, 224, 0); /* Slight contrast */
+                border-radius: 5px;
+            }
+            
+            /* Style for the list */
+            #scrollableList ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            #scrollableList li {
+                padding: 8px;
+                background-color: rgba(255, 255, 255, 0);
+                margin-bottom: 5px;
+                border-radius: 5px;
+                color: black;
+            }
+            
             .iframeContent {
                 width: 100%;
                 height: 100%;
@@ -140,6 +166,12 @@
                     width: 330px;
                     height: 185px;
                 }
+                #rightContainer {
+                    bottom: 165px;
+                    left: 30px;
+                    width: 330px;
+                    height: 185px;
+                }
                 #dropdownMenu {
                     top: 356px;
                     left: 30px;
@@ -160,6 +192,34 @@
             <iframe id="gym" class="iframeContent" src="https://my.clevr.media/modocmedia" title="Gym"></iframe>
             <iframe id="lavegaisd" class="iframeContent" src="https://my.clevr.media/lavegaisd" title="La Vega ISD"></iframe>
         </div>
+        
+        <div id="rightContainer">
+            <div id="scrollableList">
+                <ul>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -   
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                    <li>La Vega V.S Lorena | Home -  
+                        <a href="#" onclick="openMaps('La Vega High School')">La Vega High School</a> Starts @ 7:30 PM</li>
+                </ul>
+            </div>
+        </div>
+
         
         <select id="dropdownMenu" onchange="changeIframe()">
             <option value="">Choose Stream</option>
@@ -192,6 +252,16 @@
                     document.getElementById(selected).style.display = "block";
                 }
             }
+             function openMaps(location) {
+                var address = encodeURIComponent(location);
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                  window.location.href = "https://maps.apple.com/?q=" + address;
+                } else {
+                  window.location.href = "https://www.google.com/maps/search/?api=1&query="        + address;
+               }
+             }
         </script>
     </body>
 </html>
