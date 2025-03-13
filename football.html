@@ -59,6 +59,17 @@
             .CateButton:hover {
                 background-color: #575757;
             }
+            .image-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            }
+            .image-button img {
+                width: 150px; /* Adjust size */
+                height: auto;
+                display: block;
+            }
             #sideMenu {
                 position: fixed;
                 top: 130px;
@@ -186,6 +197,9 @@
     <body>
         <div id="topbar">
             <button id="menuButton" onclick="toggleMenu()">☰</button>
+            <button class="image-button" onclick="window.location.href='index.html';">
+                <img src="modocmedia.png" alt="Home Page">
+            </button>
         </div>
         <div id="lowerbar"></div>
         
