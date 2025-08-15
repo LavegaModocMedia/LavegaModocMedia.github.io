@@ -1,183 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <title>Modoc Media</title>
-        <style>
-            body {
-                margin: 0;
-                font-family: Arial, sans-serif;
-                overflow: hidden; /* Disable scrolling */
-            }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modoc Media</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #topbar {
+            background-color: #03387c;
+            height: 125px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            display: flex;
+            align-items: center;
+            padding-left: 1.6%;
+            gap: 15px; /* space between button and image */
+            z-index: 2;
+        }
+        #lowerbar {
+            background-color: #ffb81c;
+            height: 6px;
+            width: 100%;
+            position: fixed;
+            top: 124px;
+            z-index: 2;
+        }
+        #menuButton {
+            background-color: #ffb81c;
+            border: none;
+            padding: 10px 15px;
+            font-size: 18px;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+        #logo {
+            height: 80px;
+            width: auto;
+        }
+        /* Responsive adjustments */
+        @media screen and (max-width: 600px) {
             #topbar {
-                background-color: #03387c; 
-                height: 125px;
-                width: 100%;
-                position: fixed;
-                top: 0;
-                display: flex;
-                align-items: center;
-                justify-content: flex-start;
-                padding-left: 1.6%;
-                z-index: 2;
+                height: 100px;
+                padding-left: 5%;
             }
             #lowerbar {
-                background-color: #ffb81c; 
-                height: 6px;
-                width: 100%;
-                position: fixed;
-                top: 124px;
-                z-index: 2;
+                top: 99px;
             }
             #menuButton {
-                background-color: #ffb81c;
-                border: none;
-                padding: 10px 15px;
-                font-size: 18px;
-                cursor: pointer;
-                color: white;
-                border-radius: 5px;
+                font-size: 16px;
+                padding: 8px 12px;
             }
-            .CateButton {
-                background-color: #242424;
-                border: none;
-                padding: 10px 15px;
-                font-size: 18px;
-                cursor: pointer;
-                color: white;
-                border-radius: 5px;
-                display: block;
-                text-align: center;
-                margin: 5px auto;
-                width: 80%;
-                text-decoration: none;
+            #logo {
+                height: 60px;
             }
-            .CateButton:hover {
-                background-color: #575757;
-            }
-            #sideMenu {
-                position: fixed;
-                top: 130px;
-                left: -250px;
-                width: 250px;
-                height: calc(100% - 130px);
-                background-color: #242424;
-                transition: left 0.3s;
-                padding-top: 20px;
-                box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
-                z-index: 1;
-                text-align: center;
-            }
-            #sideMenu h2 {
-                color: white;
-                margin: 10px 0;
-                font-size: 20px;
-            }
-            #leftContainer {
-                position: absolute;
-                top: 185px;
-                left: 45px;
-                width: 546px;
-                height: 320px;
-                background-color: rgb(0, 128, 255);
-                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-                border-radius: 10px;
-                padding: 0; /* No padding needed */
-                overflow: hidden;
-            }
-
-            .iframeContent {
-                width: 100%;
-                height: 100%;
-                border: none;
-                display: none;
-            }
-            #dropdownMenu {
-                position: absolute;
-                top: 540px;
-                left: 45px;
-                width: 180px;
-                padding: 5px;
-                font-size: 14px;
-            }
-            /* Responsive Design */
-            @media screen and (max-width: 600px) {
-                #topbar {
-                    height: 100px;
-                    padding-left: 5%;
-                }
-                #lowerbar {
-                    top: 99px;
-                }
-                #sideMenu {
-                    top: 105px;
-                    width: 200px;
-                    height: calc(100% - 105px);
-                }
-                #menuButton {
-                    font-size: 16px;
-                    padding: 8px 12px;
-                }
-                #leftContainer {
-                    top: 165px;
-                    left: 30px;
-                    width: 330px;
-                    height: 185px;
-                }
-                #dropdownMenu {
-                    top: 356px;
-                    left: 30px;
-                    width: 175px;
-                    font-size: 12px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div id="topbar">
-            <button id="menuButton" onclick="toggleMenu()">☰</button>
-        </div>
-        <div id="lowerbar"></div>
-        
-        <div id="leftContainer">
-            <iframe id="stadium" class="iframeContent" src="https://my.clevr.media/lavegastadium" title="La Vega Stadium"></iframe>
-            <iframe id="gym" class="iframeContent" src="https://my.clevr.media/modocmedia" title="Gym"></iframe>
-            <iframe id="lavegaisd" class="iframeContent" src="https://my.clevr.media/lavegaisd" title="La Vega ISD"></iframe>
-        </div>
-        
-        <select id="dropdownMenu" onchange="changeIframe()">
-            <option value="">Choose Stream</option>
-            <option value="stadium">Stadium</option>
-            <option value="gym">Gym</option>
-            <option value="lavegaisd">La Vega ISD</option>
-        </select>
-        
-        <div id="sideMenu">
-            <h2>Category</h2>
-            <a href="football.html" class="CateButton">Football</a>
-            <a href="basketball.html" class="CateButton">Basketball</a>
-            <a href="soccer.html" class="CateButton">Soccer</a>
-            <a href="other.html" class="CateButton">Other</a>            
-        </div>
-        
-        <script>
-            function toggleMenu() {
-                let menu = document.getElementById("sideMenu");
-                let menuLeft = window.getComputedStyle(menu).left;
-                menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
-            }
-            
-            function changeIframe() {
-                let iframes = document.querySelectorAll(".iframeContent");
-                iframes.forEach(iframe => iframe.style.display = "none");
-                
-                let selected = document.getElementById("dropdownMenu").value;
-                if (selected) {
-                    document.getElementById(selected).style.display = "block";
-                }
-            }
-        </script>
-    </body>
+        }
+    </style>
+</head>
+<body>
+    <div id="topbar">
+        <button id="menuButton">☰</button>
+        <img id="logo" src="modocmedia.png" alt="Modoc Media Logo">
+    </div>
+    <div id="lowerbar"></div>
+</body>
 </html>
