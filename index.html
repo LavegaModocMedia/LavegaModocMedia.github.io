@@ -1,72 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modoc Media</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        #topbar {
-            background-color: #03387c;
-            height: 125px;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            display: flex;
-            align-items: center;
-            padding-left: 1.6%;
-            gap: 15px; /* space between button and image */
-            z-index: 2;
-        }
-        #lowerbar {
-            background-color: #ffb81c;
-            height: 6px;
-            width: 100%;
-            position: fixed;
-            top: 124px;
-            z-index: 2;
-        }
-        #menuButton {
-            background-color: #ffb81c;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            cursor: pointer;
-            color: white;
-            border-radius: 5px;
-        }
-        #logo {
-            height: 80px;
-            width: auto;
-        }
-        /* Responsive adjustments */
-        @media screen and (max-width: 600px) {
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Modoc Media</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                overflow: hidden; /* Disable scrolling */
+            }
             #topbar {
-                height: 100px;
-                padding-left: 5%;
+                background-color: #03387c; 
+                height: 125px;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: 1.6%;
+                z-index: 2;
             }
             #lowerbar {
-                top: 99px;
+                background-color: #ffb81c; 
+                height: 6px;
+                width: 100%;
+                position: fixed;
+                top: 124px;
+                z-index: 2;
             }
+
             #menuButton {
-                font-size: 16px;
-                padding: 8px 12px;
+                background-color: #ffb81c;
+                border: none;
+                padding: 10px 15px;
+                font-size: 20px;
+                cursor: pointer;
+                color: white;
+                border-radius: 5px;
+                margin-left: 10px;
             }
-            #logo {
-                height: 60px;
+            .CateButton {
+                background-color: #242424;
+                border: none;
+                padding: 10px 15px;
+                font-size: 20px;
+                cursor: pointer;
+                color: white;
+                border-radius: 5px;
+                display: block;
+                text-align: center;
+                margin: 15px auto;
+                width: 80%;
+                text-decoration: none;
             }
-        }
-    </style>
-</head>
-<body>
-    <div id="topbar">
-        <button id="menuButton">☰</button>
-        <img id="logo" src="modocmedia.png" alt="Modoc Media Logo">
-    </div>
-    <div id="lowerbar"></div>
-</body>
+            .CateButton:hover {
+                background-color: #575757;
+            }
+            .image-button {
+            position: fixed;
+            top: 33px;
+            left: 120px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            }
+            .image-button img {
+                width: 260px; /* Adjust size */
+                height: auto;
+                display: block;
+            }
+            #sideMenu {
+                position: fixed;
+                top: 130px;
+                left: -250px;
+                width: 250px;
+                height: calc(100% - 130px);
+                background-color: #242424;
+                transition: left 0.3s;
+                padding-top: 15px;
+                box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
+                z-index: 1;
+                text-align: center;
+            }
+            #sideMenu h2 {
+                color: white;
+                margin: 25px 0;
+                font-size: 27px;
+            }
+            #leftContainer {
+                position: absolute;
+                top: 185px;
+                left: 45px;
+                width: 546px;
+                height: 320px;
+                background-color: rgb(0, 0, 0);
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 0; /* No padding needed */
+                overflow: hidden;
+            }
+            #rightContainer {
+                position: absolute;
+                top: 185px;
+                right: 45px;
+                width: 650px;
+                height: 320px;
+                background-color: white;
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 0px; /* Small padding for spacing */
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #scrollableList {
+                flex-grow: 1;
+                overflow-y: auto; /* Enables vertical scrolling */
+                max-height: 100%; /* Restricts scrolling within container */
+                padding: 5px;
+                background-color: rgba(224, 224, 224, 0); /* Slight contrast */
+                border-radius: 5px;
+            }
+            
+            /* Style for the list */
+            #scrollableList ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            #scrollableList li {
+                padding: 8px;
+                background-color: rgba(255, 255, 255, 0);
+                margin-bottom: 5px;
+                border-radius: 5px;
+                color: black;
+            }
+            
+            .iframeContent {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: none;
+            }
+            #dropdownMenu {
+                position: absolute;
+                top: 510px;
+                left: 45px;
+                width: 180px;
+                padding: 5px;
+                font-size: 14px;
+                cursor: pointer; 
+            }
+            /* Responsive Design */
+            @media screen and (max-width: 600px) {
+                #topbar {
+                    height: 100px;
+                    padding-left: 5%;
+                }
+                #lowerbar {
+                    top: 99px;
+                }
+                #sideMenu {
+                    top: 105px;
+                    width: 200px;
+                    height: calc(100% - 105px);
+                }
+                #menuButton {
+                    font-size: 20px;
+                    padding: 8px 12px;
+                    margin-left: 10px;
+                }
+                #leftContainer {
+                    top: 135px;
+                    left: 30px;
+                    width: 330px;
+                    height: 185px;
+                }
+                #rightContainer {
+                    top: 385px;
+                    left: 30px;
+                    width: 330px;
+                    height: 300px;
+                }
+                #dropdownMenu {
+                    top: 326px;
+                    left: 30px;
+                    width: 175px;
+                    font-size: 12px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="topbar">
+            <button id="menuButton" onclick="toggleMenu()">☰</button>
+            <button class="image-button" onclick="window.location.href='index.html';">
+                <img src="modocmedia.png" alt="Home Page">
+            </button>
+        </div>
+        <div id="lowerbar"></div>
+ 
+        <select id="dropdownMenu" onchange="changeIframe()">
+            <option value="">Choose Stream</option>
+            <option value="stadium">Stadium</option>
+            <option value="gym">Gym</option>
+            <option value="lavegaisd">La Vega ISD</option>
+        </select>
+        
+        <div id="sideMenu">
+            <h2>Category</h2>
+            <a href="football.html" class="CateButton">Football</a>
+            <a href="basketball.html" class="CateButton">Basketball</a>
+            <a href="soccer.html" class="CateButton">Soccer</a>
+            <a href="other.html" class="CateButton">Other</a>            
+        </div>
+        
+        <script>
+            function toggleMenu() {
+                let menu = document.getElementById("sideMenu");
+                let menuLeft = window.getComputedStyle(menu).left;
+                menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
+            }
+            
+            function changeIframe() {
+                let iframes = document.querySelectorAll(".iframeContent");
+                iframes.forEach(iframe => iframe.style.display = "none");
+                
+                let selected = document.getElementById("dropdownMenu").value;
+                if (selected) {
+                    document.getElementById(selected).style.display = "block";
+                }
+            }
+             function openMaps(location) {
+                var address = encodeURIComponent(location);
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                  window.location.href = "https://maps.apple.com/?q=" + address;
+                } else {
+                  window.location.href = "https://www.google.com/maps/search/?api=1&query="        + address;
+               }
+             }
+        </script>
+    </body>
 </html>
