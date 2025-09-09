@@ -106,28 +106,72 @@
       justify-content: center;
       align-items: center;
     }
-
+    /* Added this to make #player fill the left container */
     #player {
       width: 100%;
       height: 100%;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      align-items: center;
     }
-
     #player iframe {
-      width: 48%;
+      width: 100%;
       height: 100%;
       border: none;
       border-radius: 10px;
     }
-
     #player p {
       color: black;
       font-size: 18px;
       text-align: center;
-      width: 100%;
+    }
+    #rightContainer {
+      position: absolute;
+      top: 7%;
+      left: 45px;
+      width: 650px;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0);
+      border-radius: 10px;
+      padding: 0px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #rightContainer img {
+      width: 90%;
+      height: auto;
+      border-radius: 10px;
+    }
+    @media screen and (max-width: 600px) {
+      #topbar {
+        height: 100px;
+        padding-left: 5%;
+      }
+      #lowerbar {
+        top: 99px;
+      }
+      #sideMenu {
+        top: 105px;
+        width: 200px;
+        height: calc(100% - 105px);
+      }
+      #menuButton {
+        font-size: 20px;
+        padding: 8px 12px;
+        margin-left: 10px;
+      }
+      #leftContainer {
+        top: 135px;
+        left: 30px;
+        width: 330px;
+        height: 185px;
+      }
+      #rightContainer {
+        top: 385px;
+        left: 30px;
+        width: 330px;
+        height: 300px;
+      }
     }
   </style>
 </head>
@@ -151,7 +195,7 @@
   <div id="leftContainer">
     <!-- Stream player -->
     <div id="player">
-      <p>Loading streams...</p>
+      <p>Loading stream...</p>
     </div>
   </div>
 
@@ -166,64 +210,22 @@
       menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
     }
 
-    // List of streams with URLs and a name
-    const streams = [
-      { name: 'modocmedia', url: 'https://my.clevr.media/modocmedia' },
-      { name: 'lavegaisd', url: 'https://my.clevr.media/lavegaisd' },
-      { name: 'lavegastadium', url: 'https://my.clevr.media/lavegastadium' }
-    ];
-
-    // MOCK function simulating check if stream is online
-    // You would replace this with a real check (e.g. fetch an API)
-    // Here we randomly decide online status for demonstration
-    function isStreamOnline(stream) {
-      return new Promise((resolve) => {
-        // Simulate async check with timeout
-        setTimeout(() => {
-          // For demo: let's say modocmedia and lavegastadium are online, lavegaisd offline
-          if (stream.name === 'modocmedia' || stream.name === 'lavegastadium') {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        }, 300); // 300ms delay simulating check
-      });
-    }
-
-    async function checkStreams() {
-      const player = document.getElementById('player');
-      player.innerHTML = `<p>Checking streams...</p>`;
-
-      // Check each stream status
-      const statuses = await Promise.all(streams.map(isStreamOnline));
-
-      // Filter streams online
-      const onlineStreams = streams.filter((_, i) => statuses[i]);
-
-      if (onlineStreams.length === 0) {
-        player.innerHTML = `<p>No Stream Active</p>`;
-        return;
-      }
-
-      // Build iframes for all online streams
-      player.innerHTML = '';
-      onlineStreams.forEach(stream => {
-        const iframe = document.createElement('iframe');
-        iframe.src = stream.url;
-        iframe.frameBorder = "0";
-        iframe.allow = "autoplay; fullscreen";
-        iframe.setAttribute('webkitallowfullscreen', 'true');
-        iframe.setAttribute('mozallowfullscreen', 'true');
-        iframe.allowFullscreen = true;
-        iframe.style.borderRadius = '10px';
-        player.appendChild(iframe);
-      });
+    function checkStream() {
+      document.getElementById("player").innerHTML = `
+        <iframe 
+          src="https://my.clevr.media/modocmedia" 
+          frameborder="0" 
+          allow="autoplay; fullscreen" 
+          webkitallowfullscreen="true" 
+          mozallowfullscreen="true" 
+          allowfullscreen="true"
+          style="width: 100%; height: 100%; border: none; border-radius: 10px;"
+        ></iframe>
+      `;
     }
 
     // Run on load
-    window.onload = () => {
-      checkStreams();
-    };
+    checkStream();
   </script>
 </body>
 </html>
