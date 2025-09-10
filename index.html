@@ -3,297 +3,137 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PS3 XMB Replica</title>
+<title>PS3 XMB Clone</title>
 <style>
-  /* Background similar to PS3 XMB: dark with subtle blue gradient */
   body {
     margin: 0;
-    background: linear-gradient(135deg, #000000 0%, #0a1f36 100%);
+    background: radial-gradient(circle at center, #000000 40%, #1a1a1a 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: white;
     overflow: hidden;
     user-select: none;
   }
-
   .xmb-container {
     display: flex;
-    flex-direction: column;
+    justify-content: flex-start; /* Align left */
+    align-items: flex-start;     /* Align top */
     height: 100vh;
-    padding: 40px 0;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    padding: 20px; /* Add some spacing from edges */
   }
-
-  /* Horizontal menu bar with icons + labels */
-  .menu-bar {
+  .main-menu {
     display: flex;
-    gap: 100px;
-    justify-content: center;
-    align-items: center;
+    gap: 40px; /* Reduced gap for tighter layout */
+    font-size: 24px;
+    transform-style: preserve-3d;
   }
-
   .menu-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 10px 20px;
     cursor: pointer;
-    position: relative;
-    width: 90px;
-  }
-
-  /* Icon container - circle background */
-  .menu-item .icon {
-    width: 64px;
-    height: 64px;
-    background: radial-gradient(circle at center, #152a42 60%, #001021 100%);
-    border-radius: 50%;
-    box-shadow: 0 0 6px rgba(0, 102, 255, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
-    transition: box-shadow 0.3s ease;
+    transition: transform 0.3s ease, color 0.3s ease;
     position: relative;
   }
-
-  /* Placeholder icons (simple SVG shapes) */
-  .menu-item .icon svg {
-    width: 36px;
-    height: 36px;
-    fill: #888;
-    transition: fill 0.3s ease;
+  .menu-item.selected {
+    color: #1db954;
+    transform: scale(1.3) translateZ(50px);
   }
-
-  /* Label under icon */
-  .menu-item .label {
-    font-size: 15px;
-    letter-spacing: 1px;
-    user-select: none;
-    text-transform: uppercase;
-  }
-
-  /* Selected menu item style */
-  .menu-item.selected .icon {
-    box-shadow:
-      0 0 12px 3px #54c7fc,
-      0 0 25px 8px rgba(84, 199, 252, 0.5);
-  }
-
-  .menu-item.selected .icon svg {
-    fill: #54c7fc;
-    filter: drop-shadow(0 0 6px #54c7fc);
-  }
-
-  .menu-item.selected .label {
-    color: #54c7fc;
-  }
-
-  /* Glow line below selected icon */
-  .menu-item.selected::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    width: 40px;
-    height: 3px;
-    background: #54c7fc;
-    border-radius: 2px;
-    box-shadow: 0 0 12px #54c7fc;
-  }
-
-  /* Submenu container */
   .submenu {
-    margin-top: 50px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 6px;
-    width: 320px;
-    box-shadow: 0 0 15px rgba(84, 199, 252, 0.4);
-    padding: 12px 0;
-  }
-
-  /* Submenu list */
-  .submenu-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .submenu-list li {
-    padding: 12px 24px;
+    position: absolute;
+    top: 60px;   /* Position submenu below main menu */
+    left: 20px;  /* Align with container padding */
+    display: flex;
+    gap: 20px;
     font-size: 18px;
-    border-left: 5px solid transparent;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    opacity: 0.8;
+  }
+  .submenu-item {
     cursor: pointer;
+    transition: color 0.2s ease;
   }
-
-  /* Selected submenu item */
-  .submenu-list li.selected {
-    background: rgba(84, 199, 252, 0.15);
-    border-left: 5px solid #54c7fc;
-    color: #54c7fc;
-  }
-
-  /* Keyboard focus outline removal but visible highlight */
-  .menu-item:focus,
-  .submenu-list li:focus {
-    outline: none;
+  .submenu-item.selected {
+    color: #1db954;
+    font-weight: bold;
   }
 </style>
 </head>
 <body>
-  <div class="xmb-container" role="application" aria-label="PlayStation 3 XMB Replica">
-    <nav class="menu-bar" id="menuBar" role="menubar" aria-label="Main menu">
-      <div class="menu-item selected" tabindex="0" role="menuitem" aria-selected="true" data-index="0">
-        <div class="icon" aria-hidden="true">
-          <!-- Gamepad icon -->
-          <svg viewBox="0 0 24 24" >
-            <path d="M21 8v8a2 2 0 0 1-2 2h-3v-4h-2v4H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
-        </div>
-        <div class="label">Game</div>
-      </div>
-      <div class="menu-item" tabindex="-1" role="menuitem" aria-selected="false" data-index="1">
-        <div class="icon" aria-hidden="true">
-          <!-- Video camera icon -->
-          <svg viewBox="0 0 24 24" >
-            <path d="M17 7l4-4v18l-4-4H3V7z"/>
-          </svg>
-        </div>
-        <div class="label">Video</div>
-      </div>
-      <div class="menu-item" tabindex="-1" role="menuitem" aria-selected="false" data-index="2">
-        <div class="icon" aria-hidden="true">
-          <!-- Music note icon -->
-          <svg viewBox="0 0 24 24" >
-            <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>
-          </svg>
-        </div>
-        <div class="label">Music</div>
-      </div>
-      <div class="menu-item" tabindex="-1" role="menuitem" aria-selected="false" data-index="3">
-        <div class="icon" aria-hidden="true">
-          <!-- Network icon -->
-          <svg viewBox="0 0 24 24" >
-            <circle cx="12" cy="12" r="10" stroke="none" fill="currentColor" />
-            <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" fill="none" stroke="#000" stroke-width="1"/>
-          </svg>
-        </div>
-        <div class="label">Network</div>
-      </div>
-      <div class="menu-item" tabindex="-1" role="menuitem" aria-selected="false" data-index="4">
-        <div class="icon" aria-hidden="true">
-          <!-- Gear icon -->
-          <svg viewBox="0 0 24 24" >
-            <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/>
-            <path d="M19.43 12.98l1.77-1.02-1.42-2.46-2.12.36a5.99 5.99 0 0 0-1.45-1.45l.36-2.12-2.46-1.42-1.02 1.77a6 6 0 0 0-2.13 0L8.06 5.89 5.6 7.31l.36 2.12a6 6 0 0 0-1.45 1.45l-2.12-.36-1.42 2.46 1.77 1.02a6 6 0 0 0 0 2.13l-1.77 1.02 1.42 2.46 2.12-.36a5.99 5.99 0 0 0 1.45 1.45l-.36 2.12 2.46 1.42 1.02-1.77a6 6 0 0 0 2.13 0l1.02 1.77 2.46-1.42-.36-2.12a5.99 5.99 0 0 0 1.45-1.45l2.12.36 1.42-2.46-1.77-1.02a6 6 0 0 0 0-2.13z"/>
-          </svg>
-        </div>
-        <div class="label">Settings</div>
-      </div>
-    </nav>
-
-    <div class="submenu" id="submenuContainer" role="menu" aria-label="Submenu">
-      <ul class="submenu-list" id="submenuList" tabindex="0">
-        <!-- Submenu items inserted dynamically -->
-      </ul>
+  <div class="xmb-container">
+    <div class="main-menu" tabindex="0">
+      <div class="menu-item selected" data-index="0" data-submenu="game">Game</div>
+      <div class="menu-item" data-index="1" data-submenu="video">Video</div>
+      <div class="menu-item" data-index="2" data-submenu="music">Music</div>
+      <div class="menu-item" data-index="3" data-submenu="network">Network</div>
+      <div class="menu-item" data-index="4" data-submenu="friends">Friends</div>
+      <div class="menu-item" data-index="5" data-submenu="settings">Settings</div>
     </div>
+  </div>
+  <div class="submenu" id="submenu">
+    <!-- submenu items will be inserted here -->
   </div>
 
 <script>
-  // Submenu data for each category
-  const submenuData = [
-    ['Game 1', 'Game 2', 'Game 3', 'Game 4'],
-    ['Movies', 'TV Shows', 'Videos', 'Trailers'],
-    ['All Songs', 'Playlists', 'Artists', 'Albums'],
-    ['Friends', 'Messages', 'Internet Browser', 'PlayStation Store'],
-    ['System Settings', 'Network Settings', 'Display Settings', 'Sound Settings'],
-  ];
+  const mainMenu = document.querySelector('.main-menu');
+  const menuItems = Array.from(document.querySelectorAll('.menu-item'));
+  const submenuDiv = document.getElementById('submenu');
 
-  const menuItems = document.querySelectorAll('.menu-item');
-  const submenuList = document.getElementById('submenuList');
+  const submenus = {
+    game: ['Saved Data', 'Game Data Utility', 'Trophy Collection'],
+    video: ['Video Store', 'Video Player', 'Recent Videos'],
+    music: ['Music Store', 'Music Player', 'Playlists'],
+    network: ['Internet Browser', 'PlayStation Store', 'Network Settings'],
+    friends: ['Friends List', 'Messages', 'Party Chat'],
+    settings: ['System Settings', 'Accessory Settings', 'Theme Settings'],
+  };
 
-  let selectedMenuIndex = 0;
-  let selectedSubmenuIndex = 0;
+  let mainIndex = 0;
+  let subIndex = 0;
 
-  // Render submenu items based on selected menu
-  function renderSubmenu(index) {
-    submenuList.innerHTML = '';
-    submenuData[index].forEach((item, i) => {
-      const li = document.createElement('li');
-      li.textContent = item;
-      li.dataset.index = i;
-      li.tabIndex = -1;
-      if (i === selectedSubmenuIndex) {
-        li.classList.add('selected');
-        li.tabIndex = 0;
-      }
-      submenuList.appendChild(li);
+  function updateMenu() {
+    menuItems.forEach((item, idx) => {
+      item.classList.toggle('selected', idx === mainIndex);
+    });
+    updateSubmenu();
+  }
+
+  function updateSubmenu() {
+    const submenuKey = menuItems[mainIndex].dataset.submenu;
+    const items = submenus[submenuKey];
+    submenuDiv.innerHTML = '';
+    items.forEach((text, idx) => {
+      const div = document.createElement('div');
+      div.className = 'submenu-item';
+      if (idx === subIndex) div.classList.add('selected');
+      div.textContent = text;
+      submenuDiv.appendChild(div);
     });
   }
 
-  // Update menu selection (highlight and focus)
-  function updateMenuSelection(newIndex) {
-    menuItems[selectedMenuIndex].classList.remove('selected');
-    menuItems[selectedMenuIndex].setAttribute('aria-selected', 'false');
-    menuItems[selectedMenuIndex].tabIndex = -1;
-
-    selectedMenuIndex = newIndex;
-    selectedSubmenuIndex = 0;
-
-    menuItems[selectedMenuIndex].classList.add('selected');
-    menuItems[selectedMenuIndex].setAttribute('aria-selected', 'true');
-    menuItems[selectedMenuIndex].tabIndex = 0;
-    menuItems[selectedMenuIndex].focus();
-
-    renderSubmenu(selectedMenuIndex);
-  }
-
-  // Update submenu selection (highlight and focus)
-  function updateSubmenuSelection(newIndex) {
-    const submenuItems = submenuList.querySelectorAll('li');
-    submenuItems[selectedSubmenuIndex].classList.remove('selected');
-    submenuItems[selectedSubmenuIndex].tabIndex = -1;
-
-    selectedSubmenuIndex = newIndex;
-
-    submenuItems[selectedSubmenuIndex].classList.add('selected');
-    submenuItems[selectedSubmenuIndex].tabIndex = 0;
-    submenuItems[selectedSubmenuIndex].focus();
-  }
-
-  // Handle keyboard navigation
-  document.addEventListener('keydown', (e) => {
-    const submenuItems = submenuList.querySelectorAll('li');
-
-    switch(e.key) {
-      case 'ArrowRight':
-        if (selectedMenuIndex < menuItems.length - 1) {
-          updateMenuSelection(selectedMenuIndex + 1);
-        }
-        break;
-      case 'ArrowLeft':
-        if (selectedMenuIndex > 0) {
-          updateMenuSelection(selectedMenuIndex - 1);
-        }
-        break;
-      case 'ArrowDown':
-        if (selectedSubmenuIndex < submenuItems.length - 1) {
-          updateSubmenuSelection(selectedSubmenuIndex + 1);
-        }
-        break;
-      case 'ArrowUp':
-        if (selectedSubmenuIndex > 0) {
-          updateSubmenuSelection(selectedSubmenuIndex - 1);
-        }
-        break;
-      case 'Enter':
-        alert(`Selected: ${submenuData[selectedMenuIndex][selectedSubmenuIndex]}`);
-        break;
+  mainMenu.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') {
+      mainIndex = (mainIndex + 1) % menuItems.length;
+      subIndex = 0;
+      updateMenu();
+    }
+    if (e.key === 'ArrowLeft') {
+      mainIndex = (mainIndex - 1 + menuItems.length) % menuItems.length;
+      subIndex = 0;
+      updateMenu();
+    }
+    if (e.key === 'ArrowDown') {
+      const submenuKey = menuItems[mainIndex].dataset.submenu;
+      subIndex = (subIndex + 1) % submenus[submenuKey].length;
+      updateSubmenu();
+    }
+    if (e.key === 'ArrowUp') {
+      const submenuKey = menuItems[mainIndex].dataset.submenu;
+      subIndex = (subIndex - 1 + submenus[submenuKey].length) % submenus[submenuKey].length;
+      updateSubmenu();
     }
   });
 
-  // Initial render
-  renderSubmenu(0);
+  mainMenu.focus();
+  updateMenu();
 </script>
 </body>
 </html>
