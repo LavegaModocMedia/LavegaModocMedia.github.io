@@ -84,11 +84,6 @@
       box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
     }
 
-    #player {
-      width: 100%;
-      height: 100%;
-    }
-
     #player iframe {
       width: 100%;
       height: 100%;
@@ -96,27 +91,47 @@
       border-radius: 10px;
     }
 
-    /* Dark mode class */
-    .dark {
-      background: #000;
+    /* Debug Panel */
+    #debugPanel {
+      position: absolute;
+      top: 570px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 650px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 10px;
+      box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+      font-size: 16px;
+    }
+
+    .dark #debugPanel {
+      background: rgba(255,255,255,0.1);
       color: white;
     }
 
-    .dark #streamContainer {
-      background: rgba(255,255,255,0.1);
+    #debugPanel h3 {
+      margin-top: 0;
+    }
+
+    #refreshBtn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      background: #03387c;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     @media screen and (max-width: 600px) {
-      #topbar {
-        height: 100px;
-      }
-      #lowerbar {
-        top: 99px;
-      }
       #streamContainer {
-        top: 135px;
         width: 330px;
         height: 185px;
+      }
+      #debugPanel {
+        width: 330px;
+        top: 360px;
       }
     }
   </style>
@@ -139,21 +154,68 @@
     </div>
   </div>
 
+  <!-- Stream Debug Panel -->
+  <div id="debugPanel">
+    <h3>Stream Debug Panel</h3>
+    <p><strong>Status:</strong> <span id="status">Loading...</span></p>
+    <p><strong>Iframe Load Time:</strong> <span id="loadTime">--</span> ms</p>
+    <p><strong>Network Speed:</strong> <span id="speed">Calculating...</span></p>
+    <button id="refreshBtn">Reload Stream</button>
+  </div>
+
   <script>
-    // Load stream iframe
-    document.getElementById("player").innerHTML = `
-      <iframe src="https://my.clevr.media/modocmedia" allow="autoplay; fullscreen"></iframe>
+    // Load iframe
+    const player = document.getElementById("player");
+    const iframeStart = performance.now();
+
+    player.innerHTML = `
+      <iframe id="streamFrame" src="https://my.clevr.media/modocmedia" allow="autoplay; fullscreen"></iframe>
     `;
+
+    const iframe = document.getElementById("streamFrame");
+
+    // Detect iframe load time
+    iframe.onload = () => {
+      const time = Math.round(performance.now() - iframeStart);
+      document.getElementById("loadTime").textContent = time;
+      document.getElementById("status").textContent = "Live";
+    };
+
+    iframe.onerror = () => {
+      document.getElementById("status").textContent = "Error Loading Stream";
+    };
 
     // Theme toggle
     const toggleButton = document.getElementById("themeToggle");
     toggleButton.addEventListener("click", () => {
       document.body.classList.toggle("dark");
-
-      // Switch button text
       toggleButton.textContent =
         document.body.classList.contains("dark") ? "Light Mode" : "Dark Mode";
     });
+
+    // Network speed test
+    async function testSpeed() {
+      const start = performance.now();
+      const response = await fetch("https://speed.cloudflare.com/__down?bytes=200000"); // 200 KB file
+      await response.blob();
+      const end = performance.now();
+
+      const kb = 200;
+      const seconds = (end - start) / 1000;
+      const kbps = Math.round(kb / seconds);
+
+      document.getElementById("speed").textContent = kbps + " KB/s";
+    }
+
+    setInterval(testSpeed, 1000); // update every second
+
+    // Refresh button
+    document.getElementById("refreshBtn").onclick = () => {
+      player.innerHTML = `
+        <iframe id="streamFrame" src="https://my.clevr.media/modocmedia" allow="autoplay; fullscreen"></iframe>
+      `;
+      document.getElementById("status").textContent = "Reloading...";
+    };
   </script>
 
 </body>
