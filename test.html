@@ -1,231 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <link rel="stylesheet" type="text/css" href="https://my.clevr.media/css/embed.css" />
-  <title>Modoc Media</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBS Style Interface</title>
+
+<style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
+        margin: 0;
+        background: #1e1e1e;
+        font-family: Arial, sans-serif;
+        color: #ddd;
+        overflow: hidden;
     }
-    #topbar {
-      background-color: #03387c;
-      height: 125px;
-      width: 100%;
-      position: fixed;
-      top: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding-left: 1.6%;
-      z-index: 2;
+
+    .layout {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
     }
-    #lowerbar {
-      background-color: #ffb81c;
-      height: 6px;
-      width: 100%;
-      position: fixed;
-      top: 124px;
-      z-index: 2;
+
+    /* TOP WINDOWS */
+    .top {
+        flex: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 10px;
+        background: #2a2a2a;
     }
-    #menuButton {
-      background-color: #ffb81c;
-      border: none;
-      padding: 10px 15px;
-      font-size: 20px;
-      cursor: pointer;
-      color: white;
-      border-radius: 5px;
-      margin-left: 10px;
+
+    .pane {
+        background: #000;
+        border: 2px solid #444;
+        position: relative;
+        overflow: hidden;
     }
-    .CateButton {
-      background-color: #242424;
-      border: none;
-      padding: 10px 15px;
-      font-size: 20px;
-      cursor: pointer;
-      color: white;
-      border-radius: 5px;
-      display: block;
-      text-align: center;
-      margin: 15px auto;
-      width: 80%;
-      text-decoration: none;
+
+    .pane-title {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        font-size: 14px;
+        opacity: 0.7;
+        color: white;
     }
-    .CateButton:hover {
-      background-color: #575757;
+
+    /* BOTTOM PANELS */
+    .bottom {
+        flex: 1;
+        background: #252525;
+        border-top: 1px solid #444;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
     }
-    .image-button {
-      position: fixed;
-      top: 33px;
-      left: 120px;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
+
+    .panel {
+        background: #2b2b2b;
+        border: 1px solid #444;
+        display: flex;
+        flex-direction: column;
+        padding: 6px;
     }
-    .image-button img {
-      width: 260px;
-      height: auto;
-      display: block;
+
+    .panel h3 {
+        margin: 0 0 6px 0;
+        font-size: 13px;
+        color: #ccc;
+        text-transform: uppercase;
     }
-    #sideMenu {
-      position: fixed;
-      top: 130px;
-      left: -250px;
-      width: 250px;
-      height: calc(100% - 130px);
-      background-color: #242424;
-      transition: left 0.3s;
-      padding-top: 15px;
-      box-shadow: 2px 0px 5px rgba(0,0,0,0.5);
-      z-index: 1;
-      text-align: center;
+
+    .panel-box {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        flex: 1;
+        padding: 6px;
+        overflow-y: auto;
     }
-    #sideMenu h2 {
-      color: white;
-      margin: 25px 0;
-      font-size: 27px;
+
+    /* BUTTON STYLES */
+    .list-btn {
+        width: 100%;
+        padding: 6px;
+        margin-bottom: 5px;
+        background: #3a3a3a;
+        border: 1px solid #555;
+        color: #ddd;
+        border-radius: 3px;
+        cursor: pointer;
+        text-align: left;
     }
-    #leftContainer {
-      position: absolute;
-      top: 185px;
-      right: 45px;
-      width: 546px;
-      height: 320px;
-      background-color: rgba(0, 0, 0, 0);
-      box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-      border-radius: 10px;
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+
+    .list-btn:hover {
+        background: #4a4a4a;
     }
-    /* Added this to make #player fill the left container */
-    #player {
-      width: 100%;
-      height: 100%;
+
+    .active {
+        background: #0066cc !important;
+        border-color: #0a84ff !important;
     }
-    #player iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 10px;
+
+    /* CONTROLS */
+    .control-buttons button {
+        width: 100%;
+        padding: 6px;
+        margin-bottom: 6px;
+        background: #3a3a3a;
+        border: 1px solid #555;
+        color: #ddd;
+        border-radius: 3px;
+        cursor: pointer;
     }
-    #player p {
-      color: black;
-      font-size: 18px;
-      text-align: center;
+
+    .control-buttons button:hover {
+        background: #4a4a4a;
     }
-    #rightContainer {
-      position: absolute;
-      top: 7%;
-      left: 45px;
-      width: 650px;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0);
-      border-radius: 10px;
-      padding: 0px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #rightContainer img {
-      width: 90%;
-      height: auto;
-      border-radius: 10px;
-    }
-    @media screen and (max-width: 600px) {
-      #topbar {
-        height: 100px;
-        padding-left: 5%;
-      }
-      #lowerbar {
-        top: 99px;
-      }
-      #sideMenu {
-        top: 105px;
-        width: 200px;
-        height: calc(100% - 105px);
-      }
-      #menuButton {
-        font-size: 20px;
-        padding: 8px 12px;
-        margin-left: 10px;
-      }
-      #leftContainer {
-        top: 135px;
-        left: 30px;
-        width: 330px;
-        height: 185px;
-      }
-      #rightContainer {
-        top: 385px;
-        left: 30px;
-        width: 330px;
-        height: 300px;
-      }
-    }
-  </style>
+</style>
 </head>
 <body>
-  <div id="topbar">
-    <button id="menuButton" onclick="toggleMenu()">☰</button>
-    <button class="image-button" onclick="window.location.href='index.html';">
-      <img src="modocmedia.png" alt="Home Page" />
-    </button>
-  </div>
-  <div id="lowerbar"></div>
 
-  <div id="sideMenu">
-    <h2>Category</h2>
-    <a href="football.html" class="CateButton">Football</a>
-    <a href="basketball.html" class="CateButton">Basketball</a>
-    <a href="soccer.html" class="CateButton">Soccer</a>
-    <a href="other.html" class="CateButton">Other</a>
-  </div>
+<div class="layout">
 
-  <div id="leftContainer">
-    <!-- Stream player -->
-    <div id="player">
-      <p>Loading stream...</p>
+    <!-- TOP WINDOWS -->
+    <div class="top">
+        <div id="preview" class="pane">
+            <div class="pane-title">Preview</div>
+        </div>
+
+        <div id="program" class="pane">
+            <div class="pane-title">Program</div>
+        </div>
     </div>
-  </div>
 
-  <div id="rightContainer">
-    <img src="screenshot.png" alt="Lavega Football Schedule" />
-  </div>
+    <!-- BOTTOM PANELS -->
+    <div class="bottom">
 
-  <script>
-    function toggleMenu() {
-      let menu = document.getElementById("sideMenu");
-      let menuLeft = window.getComputedStyle(menu).left;
-      menu.style.left = menuLeft === "0px" ? "-250px" : "0px";
+        <!-- SCENES -->
+        <div class="panel">
+            <h3>Scenes</h3>
+            <div id="sceneList" class="panel-box"></div>
+        </div>
+
+        <!-- SOURCES -->
+        <div class="panel">
+            <h3>Sources</h3>
+            <div id="sourceList" class="panel-box"></div>
+        </div>
+
+        <!-- AUDIO (unused placeholder) -->
+        <div class="panel">
+            <h3>Audio Mixer</h3>
+            <div class="panel-box">(Audio channels)</div>
+        </div>
+
+        <!-- SCENE TRANSITIONS -->
+        <div class="panel">
+            <h3>Scene Transitions</h3>
+            <div class="panel-box">
+                <button id="switchBtn" class="list-btn">Switch (Preview → Program)</button>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="panel">
+            <h3>Controls</h3>
+            <div class="control-buttons">
+                <button>Start Streaming</button>
+                <button>Start Recording</button>
+                <button>Studio Mode</button>
+                <button>Settings</button>
+                <button>Exit</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   DATA STRUCTURE
+   ────────────────────────────────────────────────────────────── */
+const scenes = {
+    "Uno Overlays": [
+        { name: "Overlay 1", type: "iframe", url: "https://example.com" },
+        { name: "Overlay 2", type: "iframe", url: "https://example.org" }
+    ],
+    "Stream Controller": [
+        { name: "clevr.media", type: "iframe", url: "https://clevr.media" },
+        { name: "Statistics", type: "container" },
+        { name: "Extra Container", type: "container" }
+    ]
+};
+
+let currentScene = null;
+let currentSource = null;
+
+/* ──────────────────────────────────────────────────────────────
+   LOAD SCENES
+   ────────────────────────────────────────────────────────────── */
+function loadScenes() {
+    const list = document.getElementById("sceneList");
+    list.innerHTML = "";
+
+    Object.keys(scenes).forEach(scene => {
+        const btn = document.createElement("button");
+        btn.className = "list-btn";
+        btn.innerText = scene;
+
+        btn.onclick = () => {
+            document.querySelectorAll("#sceneList button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentScene = scene;
+            loadSources(scene);
+        };
+
+        list.appendChild(btn);
+    });
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LOAD SOURCES FOR SELECTED SCENE
+   ────────────────────────────────────────────────────────────── */
+function loadSources(scene) {
+    const list = document.getElementById("sourceList");
+    list.innerHTML = "";
+
+    scenes[scene].forEach(source => {
+        const btn = document.createElement("button");
+        btn.className = "list-btn";
+        btn.innerText = source.name;
+
+        btn.onclick = () => {
+            document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentSource = source;
+            loadPreview(source);
+        };
+
+        list.appendChild(btn);
+    });
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LOAD PREVIEW WINDOW
+   ────────────────────────────────────────────────────────────── */
+function loadPreview(source) {
+    const preview = document.getElementById("preview");
+    preview.innerHTML = '<div class="pane-title">Preview</div>';
+
+    if (source.type === "iframe") {
+        const frame = document.createElement("iframe");
+        frame.src = source.url;
+        frame.style.width = "100%";
+        frame.style.height = "100%";
+        frame.style.border = "none";
+        preview.appendChild(frame);
+    } else {
+        preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
+}
 
-    function checkStream() {
-      document.getElementById("player").innerHTML = `
-        <iframe 
-          src="https://my.clevr.media/modocmedia" 
-          frameborder="0" 
-          allow="autoplay; fullscreen" 
-          webkitallowfullscreen="true" 
-          mozallowfullscreen="true" 
-          allowfullscreen="true"
-          style="width: 100%; height: 100%; border: none; border-radius: 10px;"
-        ></iframe>
-      `;
-    }
+/* ──────────────────────────────────────────────────────────────
+   SWITCH BUTTON (Preview → Program)
+   ────────────────────────────────────────────────────────────── */
+document.getElementById("switchBtn").onclick = () => {
+    const program = document.getElementById("program");
+    const preview = document.getElementById("preview");
 
-    // Run on load
-    checkStream();
-  </script>
+    program.innerHTML = preview.innerHTML.replace("Preview", "Program");
+};
+
+/* ────────────────────────────────────────────────────────────── */
+loadScenes();
+</script>
+
 </body>
 </html>
