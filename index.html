@@ -15,13 +15,11 @@
       overflow-x: hidden;
     }
 
-    /* Dark Mode */
     .dark {
       background: #000 !important;
       color: #fff !important;
     }
 
-    /* Top blue bar */
     #topbar {
       background-color: #03387c;
       height: 125px;
@@ -35,7 +33,6 @@
       z-index: 2;
     }
 
-    /* Yellow bar */
     #lowerbar {
       background-color: #ffb81c;
       height: 6px;
@@ -45,7 +42,6 @@
       z-index: 2;
     }
 
-    /* Logo */
     .logo-button {
       background: none;
       border: none;
@@ -59,7 +55,6 @@
       height: auto;
     }
 
-    /* Theme toggle button */
     #themeToggle {
       position: fixed;
       top: 45px;
@@ -93,9 +88,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+      box-shadow: 0px 2px 10px rgba(0, 0, 0, 0);
     }
 
+    /* Make player fill container */
+    #player {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Make iframe fill player */
     #player iframe {
       width: 100%;
       height: 100%;
@@ -103,7 +105,6 @@
       border-radius: 10px;
     }
 
-    /* Debug Panel */
     #debugPanel {
       position: absolute;
       top: 570px;
@@ -115,7 +116,6 @@
       box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
       font-size: 16px;
 
-      /* Match page theme automatically */
       background: inherit;
       color: inherit;
     }
@@ -124,7 +124,6 @@
       margin-top: 0;
     }
 
-    /* Refresh Button */
     #refreshBtn {
       margin-top: 10px;
       padding: 8px 12px;
@@ -165,12 +164,9 @@
   <button id="themeToggle">Dark Mode</button>
 
   <div id="streamContainer">
-    <div id="player">
-      <p>Loading stream...</p>
-    </div>
+    <div id="player"></div>
   </div>
 
-  <!-- Stream Debug Panel -->
   <div id="debugPanel">
     <h3>Stream Debug Panel</h3>
     <p><strong>Status:</strong> <span id="status">Loading...</span></p>
@@ -190,7 +186,6 @@
 
     const iframe = document.getElementById("streamFrame");
 
-    // Detect iframe load time
     iframe.onload = () => {
       const time = Math.round(performance.now() - iframeStart);
       document.getElementById("loadTime").textContent = time;
@@ -201,7 +196,6 @@
       document.getElementById("status").textContent = "Error Loading Stream";
     };
 
-    // Theme toggle
     const toggleButton = document.getElementById("themeToggle");
     toggleButton.addEventListener("click", () => {
       document.body.classList.toggle("dark");
@@ -229,7 +223,6 @@
 
     setInterval(testSpeed, 1000);
 
-    // Refresh button
     document.getElementById("refreshBtn").onclick = () => {
       player.innerHTML = `
         <iframe id="streamFrame" src="https://my.clevr.media/modocmedia" allow="autoplay; fullscreen"></iframe>
