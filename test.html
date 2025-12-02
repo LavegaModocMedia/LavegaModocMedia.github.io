@@ -167,8 +167,10 @@
             <div class="control-buttons">
                 <button id="fullscreenBtn">Full Screen Toggle</button>
                 <button id="switchBtn">Switch (Preview ↔ Program)</button>
+                
                 <button id="unoOverlaysBtn">Uno Overlays</button>
                 <button id="clevrMediaBtn">Clevr.media</button>
+                
                 <button>Exit</button>
             </div>
         </div>
@@ -176,9 +178,12 @@
 </div>
 <button id="exitFullscreenBtn" class="circle-btn" title="Exit Fullscreen">×</button>
 <script>
+/* ──────────────────────────────────────────────────────────────
+   DATA STRUCTURE
+   ────────────────────────────────────────────────────────────── */
 const scenes = {
     "Uno Overlays": [
-        { name: "Overlay 1", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV", width: "100%", height: "600px" },
+        { name: "Overlay 1", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV" },
         { name: "Overlay 2", type: "iframe", url: "https://app.overlays.uno/control/2ntyEAKMyNdK4KnZ3Zug2f" }
     ],
     "Stream Controller": [
@@ -189,7 +194,9 @@ const scenes = {
 };
 let currentScene = null;
 let currentSource = null;
-
+/* ──────────────────────────────────────────────────────────────
+   LOAD SCENES
+   ────────────────────────────────────────────────────────────── */
 function loadScenes() {
     const list = document.getElementById("sceneList");
     list.innerHTML = "";
@@ -206,7 +213,9 @@ function loadScenes() {
         list.appendChild(btn);
     });
 }
-
+/* ──────────────────────────────────────────────────────────────
+   LOAD SOURCES FOR SELECTED SCENE
+   ────────────────────────────────────────────────────────────── */
 function loadSources(scene) {
     const list = document.getElementById("sourceList");
     list.innerHTML = "";
@@ -223,37 +232,49 @@ function loadSources(scene) {
         list.appendChild(btn);
     });
 }
-
+/* ──────────────────────────────────────────────────────────────
+   LOAD PREVIEW WINDOW
+   ────────────────────────────────────────────────────────────── */
 function loadPreview(source) {
     const preview = document.getElementById("preview");
     preview.innerHTML = '<div class="pane-title">Preview</div>';
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
         frame.src = source.url;
-        frame.style.width = source.width || "100%";
-        frame.style.height = source.height || "100%";
+        frame.style.width = "100%";
+        frame.style.height = "100%";
         frame.style.border = "none";
         preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
 }
-
+/* ──────────────────────────────────────────────────────────────
+   SWITCH BUTTON (Swap Preview & Program)
+   ────────────────────────────────────────────────────────────── */
 document.getElementById("switchBtn").onclick = () => {
     const program = document.getElementById("program");
     const preview = document.getElementById("preview");
     const temp = preview.innerHTML;
+    // Replace pane-title text when swapping
     preview.innerHTML = program.innerHTML.replace("Program", "Preview");
     program.innerHTML = temp.replace("Preview", "Program");
 };
 
+/* ──────────────────────────────────────────────────────────────
+   NEW: URL BUTTONS
+   ────────────────────────────────────────────────────────────── */
 document.getElementById("unoOverlaysBtn").onclick = () => {
     window.open('https://overlays.uno/library', '_blank');
 };
+
 document.getElementById("clevrMediaBtn").onclick = () => {
     window.open('https://my.clevr.media/portal/login.php', '_blank');
 };
 
+/* ──────────────────────────────────────────────────────────────
+   FULL SCREEN TOGGLE
+   ────────────────────────────────────────────────────────────── */
 let isFullscreen = false;
 const exitBtn = document.getElementById("exitFullscreenBtn");
 document.getElementById("fullscreenBtn").onclick = () => {
@@ -262,15 +283,16 @@ document.getElementById("fullscreenBtn").onclick = () => {
     if (!isFullscreen) {
         top.classList.add("fullscreen-top");
         bottom.classList.add("hide-bottom");
-        exitBtn.style.display = "block";
+        exitBtn.style.display = "block"; // Show exit button
         isFullscreen = true;
     } else {
         top.classList.remove("fullscreen-top");
         bottom.classList.remove("hide-bottom");
-        exitBtn.style.display = "none";
+        exitBtn.style.display = "none"; // Hide exit button
         isFullscreen = false;
     }
 };
+// Click on exit button also exits full screen
 exitBtn.onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
@@ -279,7 +301,7 @@ exitBtn.onclick = () => {
     exitBtn.style.display = "none";
     isFullscreen = false;
 };
-
+/* ────────────────────────────────────────────────────────────── */
 loadScenes();
 </script>
 </body>
