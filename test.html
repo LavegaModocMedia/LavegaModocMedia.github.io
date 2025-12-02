@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBS Style Interface</title>
+<style>
+    body {
+        margin: 0;
+        background: #1e1e1e;
+        font-family: Arial, sans-serif;
+        color: #ddd;
+        overflow: hidden;
+    }
+    .layout {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    /* TOP WINDOWS */
+    .top {
+        flex: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 10px;
+        background: #2a2a2a;
+    }
+    .pane {
+        background: #000;
+        border: 2px solid #444;
+        position: relative;
+        overflow: hidden;
+    }
+    .pane-title {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        font-size: 14px;
+        opacity: 0.7;
+        color: white;
+    }
+    /* BOTTOM PANELS */
+    .bottom {
+        flex: 1;
+        background: #252525;
+        border-top: 1px solid #444;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+    }
+    .panel {
+        background: #2b2b2b;
+        border: 1px solid #444;
+        display: flex;
+        flex-direction: column;
+        padding: 6px;
+    }
+    .panel h3 {
+        margin: 0 0 6px 0;
+        font-size: 13px;
+        color: #ccc;
+        text-transform: uppercase;
+    }
+    .panel-box {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        flex: 1;
+        padding: 6px;
+        overflow-y: auto;
+    }
+    /* BUTTON STYLES */
+    .list-btn {
+        width: 100%;
+        padding: 6px;
+        margin-bottom: 5px;
+        background: #3a3a3a;
+        border: 1px solid #555;
+        color: #ddd;
+        border-radius: 3px;
+        cursor: pointer;
+        text-align: left;
+    }
+    .list-btn:hover {
+        background: #4a4a4a;
+    }
+    .active {
+        background: #0066cc !important;
+        border-color: #0a84ff !important;
+    }
+    /* CONTROLS */
+    .control-buttons button {
+        width: 100%;
+        padding: 6px;
+        margin-bottom: 6px;
+        background: #3a3a3a;
+        border: 1px solid #555;
+        color: #ddd;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .control-buttons button:hover {
+        background: #4a4a4a;
+    }
+    /* FULLSCREEN MODE */
+    .fullscreen-top {
+        flex: 1 1 100%;
+        height: 100vh !important;
+    }
+    .hide-bottom {
+        display: none !important;
+    }
+    /* EXIT FULLSCREEN BUTTON */
+    .circle-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ff5555;
+        color: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        display: none; /* Hidden by default */
+        z-index: 1000;
+        box-shadow: 0 0 10px #000;
+    }
+    .circle-btn:hover {
+        background: #ff2222;
+    }
+</style>
+</head>
+<body>
+<div class="layout">
+    <div class="top">
+        <div id="preview" class="pane">
+            <div class="pane-title">Preview</div>
+        </div>
+        <div id="program" class="pane">
+            <div class="pane-title">Program</div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="panel">
+            <h3>Scenes</h3>
+            <div id="sceneList" class="panel-box"></div>
+        </div>
+        <div class="panel">
+            <h3>Sources</h3>
+            <div id="sourceList" class="panel-box"></div>
+        </div>
+        <div class="panel">
+            <h3>Debugging</h3>
+            <div class="panel-box">(Audio channels)</div>
+        </div>
+        <div class="panel">
+            <h3>Scene Transitions</h3>
+            <div class="panel-box">
+                <p style="font-size: 11px; margin: 0; padding: 4px; color: #888;">Transition controls...</p>
+            </div>
+        </div>
+        <div class="panel">
+            <h3>Controls</h3>
+            <div class="control-buttons">
+                <button id="fullscreenBtn">Full Screen Toggle</button>
+                <button id="switchBtn">Switch (Preview ↔ Program)</button>
+                <button id="unoOverlaysBtn">Uno Overlays</button>
+                <button id="clevrMediaBtn">Clevr.media</button>
+                <button>Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<button id="exitFullscreenBtn" class="circle-btn" title="Exit Fullscreen">×</button>
+<script>
+const scenes = {
+    "Uno Overlays": [
+        { name: "Overlay 1", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV", width: "100%", height: "600px" },
+        { name: "Overlay 2", type: "iframe", url: "https://app.overlays.uno/control/2ntyEAKMyNdK4KnZ3Zug2f" }
+    ],
+    "Stream Controller": [
+        { name: "clevr.media", type: "iframe", url: "https://clevr.media" },
+        { name: "Statistics", type: "container" },
+        { name: "Extra Container", type: "container" }
+    ]
+};
+let currentScene = null;
+let currentSource = null;
+
+function loadScenes() {
+    const list = document.getElementById("sceneList");
+    list.innerHTML = "";
+    Object.keys(scenes).forEach(scene => {
+        const btn = document.createElement("button");
+        btn.className = "list-btn";
+        btn.innerText = scene;
+        btn.onclick = () => {
+            document.querySelectorAll("#sceneList button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentScene = scene;
+            loadSources(scene);
+        };
+        list.appendChild(btn);
+    });
+}
+
+function loadSources(scene) {
+    const list = document.getElementById("sourceList");
+    list.innerHTML = "";
+    scenes[scene].forEach(source => {
+        const btn = document.createElement("button");
+        btn.className = "list-btn";
+        btn.innerText = source.name;
+        btn.onclick = () => {
+            document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentSource = source;
+            loadPreview(source);
+        };
+        list.appendChild(btn);
+    });
+}
+
+function loadPreview(source) {
+    const preview = document.getElementById("preview");
+    preview.innerHTML = '<div class="pane-title">Preview</div>';
+    if (source.type === "iframe") {
+        const frame = document.createElement("iframe");
+        frame.src = source.url;
+        frame.style.width = source.width || "100%";
+        frame.style.height = source.height || "100%";
+        frame.style.border = "none";
+        preview.appendChild(frame);
+    } else {
+        preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
+    }
+}
+
+document.getElementById("switchBtn").onclick = () => {
+    const program = document.getElementById("program");
+    const preview = document.getElementById("preview");
+    const temp = preview.innerHTML;
+    preview.innerHTML = program.innerHTML.replace("Program", "Preview");
+    program.innerHTML = temp.replace("Preview", "Program");
+};
+
+document.getElementById("unoOverlaysBtn").onclick = () => {
+    window.open('https://overlays.uno/library', '_blank');
+};
+document.getElementById("clevrMediaBtn").onclick = () => {
+    window.open('https://my.clevr.media/portal/login.php', '_blank');
+};
+
+let isFullscreen = false;
+const exitBtn = document.getElementById("exitFullscreenBtn");
+document.getElementById("fullscreenBtn").onclick = () => {
+    const top = document.querySelector(".top");
+    const bottom = document.querySelector(".bottom");
+    if (!isFullscreen) {
+        top.classList.add("fullscreen-top");
+        bottom.classList.add("hide-bottom");
+        exitBtn.style.display = "block";
+        isFullscreen = true;
+    } else {
+        top.classList.remove("fullscreen-top");
+        bottom.classList.remove("hide-bottom");
+        exitBtn.style.display = "none";
+        isFullscreen = false;
+    }
+};
+exitBtn.onclick = () => {
+    const top = document.querySelector(".top");
+    const bottom = document.querySelector(".bottom");
+    top.classList.remove("fullscreen-top");
+    bottom.classList.remove("hide-bottom");
+    exitBtn.style.display = "none";
+    isFullscreen = false;
+};
+
+loadScenes();
+</script>
+</body>
+</html>
