@@ -30,8 +30,6 @@
         background: #000;
         border: 2px solid #444;
         position: relative;
-
-        /* UPDATED TO ALLOW WIDE IFRAMES */
         overflow-y: auto;
         overflow-x: visible;
     }
@@ -186,7 +184,11 @@ const scenes = {
         { name: "Timer", type: "iframe", url: "https://app.overlays.uno/control/2ntyEAKMyNdK4KnZ3Zug2f" }
     ],
     "Stream Controller": [
-        { name: "Stream View", type: "iframe", url: "https://www.speedtest.net/" },
+        { name: "Stream View", type: "iframe", urls: [
+            { name: "Gym", url: "https://my.clevr.media/modocmedia" },
+            { name: "Stadium", url: "https://my.clevr.media/lavegastadium" },
+            { name: "Lavegaisd", url: "https://my.clevr.media/lavegaisd" }
+        ] },
         { name: "Statistics", type: "container" },
         { name: "Extra Container", type: "container" }
     ]
@@ -194,6 +196,7 @@ const scenes = {
 
 let currentScene = null;
 let currentSource = null;
+let currentStreamIndex = 0;
 
 function loadScenes() {
     const list = document.getElementById("sceneList");
@@ -223,7 +226,9 @@ function loadSources(scene) {
             document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             currentSource = source;
+            currentStreamIndex = 0;
             loadPreview(source);
+            updateStreamButtons(source);
         };
         list.appendChild(btn);
     });
@@ -235,10 +240,16 @@ function loadPreview(source) {
 
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
-        frame.src = source.url;
+
+        // Use multiple URLs if Stream View has them
+        if (source.urls) {
+            frame.src = source.urls[currentStreamIndex].url;
+        } else {
+            frame.src = source.url;
+        }
 
         // Only Uno overlays get stretched size
-        const isUno = source.url.includes("overlays.uno");
+        const isUno = frame.src.includes("overlays.uno");
 
         if (isUno) {
             frame.style.width = "100%";
@@ -256,6 +267,28 @@ function loadPreview(source) {
     }
 }
 
+// STREAM VIEW BUTTONS
+function updateStreamButtons(source) {
+    const transitionPanel = document.querySelector(".panel:nth-child(4) .panel-box");
+    transitionPanel.innerHTML = '<p style="font-size: 11px; margin: 0; padding: 4px; color: #888;">Transition controls...</p>';
+
+    if (source.name === "Stream View" && source.urls) {
+        source.urls.forEach((urlObj, i) => {
+            const btn = document.createElement("button");
+            btn.className = "list-btn";
+            btn.innerText = urlObj.name; // Use custom names
+            if (i === currentStreamIndex) btn.classList.add("active");
+            btn.onclick = () => {
+                currentStreamIndex = i;
+                loadPreview(source);
+                updateStreamButtons(source);
+            };
+            transitionPanel.appendChild(btn);
+        });
+    }
+}
+
+// --- EXISTING CONTROLS ---
 document.getElementById("switchBtn").onclick = () => {
     const program = document.getElementById("program");
     const preview = document.getElementById("preview");
