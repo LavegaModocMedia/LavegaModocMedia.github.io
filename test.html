@@ -19,7 +19,7 @@
     }
     /* TOP WINDOWS */
     .top {
-        flex: 2;
+        flex: 3; /* Increased from 2 → 3 for taller preview/program */
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -194,6 +194,7 @@ const scenes = {
 };
 let currentScene = null;
 let currentSource = null;
+
 /* ──────────────────────────────────────────────────────────────
    LOAD SCENES
    ────────────────────────────────────────────────────────────── */
@@ -213,6 +214,7 @@ function loadScenes() {
         list.appendChild(btn);
     });
 }
+
 /* ──────────────────────────────────────────────────────────────
    LOAD SOURCES FOR SELECTED SCENE
    ────────────────────────────────────────────────────────────── */
@@ -232,6 +234,7 @@ function loadSources(scene) {
         list.appendChild(btn);
     });
 }
+
 /* ──────────────────────────────────────────────────────────────
    LOAD PREVIEW WINDOW
    ────────────────────────────────────────────────────────────── */
@@ -242,13 +245,21 @@ function loadPreview(source) {
         const frame = document.createElement("iframe");
         frame.src = source.url;
         frame.style.width = "100%";
-        frame.style.height = "100%";
+
+        // Make Overlay 1 & 2 iframes taller
+        if (source.name === "Overlay 1" || source.name === "Overlay 2") {
+            frame.style.height = "120%";
+        } else {
+            frame.style.height = "100%";
+        }
+
         frame.style.border = "none";
         preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
 }
+
 /* ──────────────────────────────────────────────────────────────
    SWITCH BUTTON (Swap Preview & Program)
    ────────────────────────────────────────────────────────────── */
@@ -256,18 +267,16 @@ document.getElementById("switchBtn").onclick = () => {
     const program = document.getElementById("program");
     const preview = document.getElementById("preview");
     const temp = preview.innerHTML;
-    // Replace pane-title text when swapping
     preview.innerHTML = program.innerHTML.replace("Program", "Preview");
     program.innerHTML = temp.replace("Preview", "Program");
 };
 
 /* ──────────────────────────────────────────────────────────────
-   NEW: URL BUTTONS
+   URL BUTTONS
    ────────────────────────────────────────────────────────────── */
 document.getElementById("unoOverlaysBtn").onclick = () => {
     window.open('https://overlays.uno/library', '_blank');
 };
-
 document.getElementById("clevrMediaBtn").onclick = () => {
     window.open('https://my.clevr.media/portal/login.php', '_blank');
 };
@@ -283,16 +292,15 @@ document.getElementById("fullscreenBtn").onclick = () => {
     if (!isFullscreen) {
         top.classList.add("fullscreen-top");
         bottom.classList.add("hide-bottom");
-        exitBtn.style.display = "block"; // Show exit button
+        exitBtn.style.display = "block";
         isFullscreen = true;
     } else {
         top.classList.remove("fullscreen-top");
         bottom.classList.remove("hide-bottom");
-        exitBtn.style.display = "none"; // Hide exit button
+        exitBtn.style.display = "none";
         isFullscreen = false;
     }
 };
-// Click on exit button also exits full screen
 exitBtn.onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
@@ -301,6 +309,7 @@ exitBtn.onclick = () => {
     exitBtn.style.display = "none";
     isFullscreen = false;
 };
+
 /* ────────────────────────────────────────────────────────────── */
 loadScenes();
 </script>
