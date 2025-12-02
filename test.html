@@ -30,7 +30,7 @@
         background: #000;
         border: 2px solid #444;
         position: relative;
-        overflow: hidden;
+        overflow: hidden; /* This is key to hiding the oversized iframe */
     }
     .pane-title {
         position: absolute;
@@ -233,21 +233,39 @@ function loadSources(scene) {
     });
 }
 /* ──────────────────────────────────────────────────────────────
-   LOAD PREVIEW WINDOW
+   MODIFIED: LOAD PREVIEW WINDOW (Increased iframe resolution)
    ────────────────────────────────────────────────────────────── */
 function loadPreview(source) {
     const preview = document.getElementById("preview");
     preview.innerHTML = '<div class="pane-title">Preview</div>';
+
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
         frame.src = source.url;
-        frame.style.width = "100%";
-        frame.style.height = "100%";
+
+        // ** START of Resolution Hack **
+
+        // Define the scale factor. 0.5 means 50% size, which gives you 2x the effective resolution.
+        const scaleFactor = 0.5; 
+        const resolutionMultiplier = 1 / scaleFactor; // 2.0 (200%)
+
+        // 1. Set the iframe's internal dimensions to be larger than the container.
+        frame.style.width = `${resolutionMultiplier * 100}%`; // e.g., 200%
+        frame.style.height = `${resolutionMultiplier * 100}%`; // e.g., 200%
         frame.style.border = "none";
+
+        // 2. Scale the visual output back down to fit the container.
+        // This makes the iframe's larger "resolution" content appear smaller,
+        // and because the parent (.pane) has overflow: hidden, the excess is hidden.
+        frame.style.transform = `scale(${scaleFactor})`; // e.g., scale(0.5)
+        frame.style.transformOrigin = '0 0'; // Scale from the top-left corner
+        
+        // ** END of Resolution Hack **
+
         preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
-    }
+ }
 }
 /* ──────────────────────────────────────────────────────────────
    SWITCH BUTTON (Swap Preview & Program)
@@ -306,3 +324,4 @@ loadScenes();
 </script>
 </body>
 </html>
+
