@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -30,8 +30,6 @@
         background: #000;
         border: 2px solid #444;
         position: relative;
-
-        /* UPDATED TO ALLOW WIDE IFRAMES */
         overflow-y: auto;
         overflow-x: visible;
     }
@@ -73,7 +71,6 @@
         padding: 6px;
         overflow-y: auto;
     }
-    /* BUTTON STYLES */
     .list-btn {
         width: 100%;
         padding: 6px;
@@ -92,7 +89,6 @@
         background: #0066cc !important;
         border-color: #0a84ff !important;
     }
-    /* CONTROLS */
     .control-buttons button {
         width: 100%;
         padding: 6px;
@@ -106,7 +102,6 @@
     .control-buttons button:hover {
         background: #4a4a4a;
     }
-    /* FULLSCREEN MODE */
     .fullscreen-top {
         flex: 1 1 100%;
         height: 100vh !important;
@@ -114,7 +109,6 @@
     .hide-bottom {
         display: none !important;
     }
-    /* EXIT FULLSCREEN BUTTON */
     .circle-btn {
         position: fixed;
         bottom: 20px;
@@ -137,6 +131,7 @@
 </style>
 </head>
 <body>
+
 <div class="layout">
     <div class="top">
         <div id="preview" class="pane">
@@ -146,6 +141,7 @@
             <div class="pane-title">Program</div>
         </div>
     </div>
+
     <div class="bottom">
         <div class="panel">
             <h3>Scenes</h3>
@@ -177,24 +173,80 @@
         </div>
     </div>
 </div>
+
 <button id="exitFullscreenBtn" class="circle-btn" title="Exit Fullscreen">×</button>
 
 <script>
+/* ------------------------------------
+   SCENES (includes WiFi Speed Test)
+------------------------------------ */
 const scenes = {
     "Uno Overlays": [
-        { name: "Overlay 1", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV" },
-        { name: "Overlay 2", type: "iframe", url: "https://app.overlays.uno/control/2ntyEAKMyNdK4KnZ3Zug2f" }
+        { name: "Scoreboard", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV" },
+        { name: "Timer", type: "iframe", url: "https://app.overlays.uno/control/2ntyEAKMyNdK4KnZ3Zug2f" }
     ],
     "Stream Controller": [
-        { name: "Wifi Speed test", type: "iframe", url: "https://www.speedtest.net/" },
+        { name: "Stream Viewer", type: "clevr-auto" },
         { name: "Statistics", type: "container" },
         { name: "Extra Container", type: "container" }
     ]
 };
 
-let currentScene = null;
-let currentSource = null;
+/* ------------------------------------
+   CLEVR MEDIA AUTO-DETECT SYSTEM
+------------------------------------ */
+const clevrStreams = [
+    { name: "Lavega Stadium", url: "https://my.clevr.media/lavegastadium" },
+    { name: "Lavega ISD", url: "https://my.clevr.media/lavegaisd" },
+    { name: "Modoc Media", url: "https://my.clevr.media/modocmedia" }
+];
 
+let lastActiveStream = null;
+
+async function isStreamLive(url) {
+    try {
+        await fetch(url, { method: "GET", mode: "no-cors" });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+async function getActiveClevrStream() {
+    for (const stream of clevrStreams) {
+        const live = await isStreamLive(stream.url);
+        if (live) return stream;
+    }
+    return null;
+}
+
+async function updateStreamViewer() {
+    const preview = document.getElementById("preview");
+    preview.innerHTML = '<div class="pane-title">Preview</div>';
+
+    const active = await getActiveClevrStream();
+    let streamToShow = active || lastActiveStream;
+
+    if (active) lastActiveStream = active;
+
+    if (!streamToShow) {
+        preview.innerHTML += `<div style="color:white; padding:20px;">No Active Stream</div>`;
+        return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.src = streamToShow.url;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    preview.appendChild(iframe);
+}
+
+setInterval(updateStreamViewer, 10000);
+
+/* ------------------------------------
+   UI SYSTEM
+------------------------------------ */
 function loadScenes() {
     const list = document.getElementById("sceneList");
     list.innerHTML = "";
@@ -205,7 +257,6 @@ function loadScenes() {
         btn.onclick = () => {
             document.querySelectorAll("#sceneList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            currentScene = scene;
             loadSources(scene);
         };
         list.appendChild(btn);
@@ -222,7 +273,6 @@ function loadSources(scene) {
         btn.onclick = () => {
             document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            currentSource = source;
             loadPreview(source);
         };
         list.appendChild(btn);
@@ -233,24 +283,21 @@ function loadPreview(source) {
     const preview = document.getElementById("preview");
     preview.innerHTML = '<div class="pane-title">Preview</div>';
 
+    if (source.type === "clevr-auto") {
+        updateStreamViewer();
+        return;
+    }
+
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
         frame.src = source.url;
 
-        // Only Uno overlays get stretched size
         const isUno = source.url.includes("overlays.uno");
-
-        if (isUno) {
-            frame.style.width = "150%";
-            frame.style.height = "350%";
-        } else {
-            frame.style.width = "100%";
-            frame.style.height = "100%";
-        }
-
+        frame.style.width = isUno ? "150%" : "100%";
+        frame.style.height = isUno ? "350%" : "100%";
         frame.style.border = "none";
-        preview.appendChild(frame);
 
+        preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
@@ -273,6 +320,7 @@ document.getElementById("clevrMediaBtn").onclick = () => {
 
 let isFullscreen = false;
 const exitBtn = document.getElementById("exitFullscreenBtn");
+
 document.getElementById("fullscreenBtn").onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
@@ -288,6 +336,7 @@ document.getElementById("fullscreenBtn").onclick = () => {
         isFullscreen = false;
     }
 };
+
 exitBtn.onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
