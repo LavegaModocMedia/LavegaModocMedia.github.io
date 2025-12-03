@@ -18,7 +18,7 @@
         height: 100vh;
     }
     .top {
-        flex: 2;
+        flex: 1.38;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -169,7 +169,6 @@
 
 <button id="exitFullscreenBtn" class="circle-btn"></button>
 
-
 <script>
 /* ---------------- SCENES + SOURCES ---------------- */
 
@@ -253,7 +252,7 @@ function loadPreview(source) {
     }
 }
 
-/* ---------- FIXED: SAFE TRANSITION PANEL ---------- */
+/* ---------- SAFE TRANSITION PANEL ---------- */
 function updateStreamButtons(source) {
     const transitionPanel = document.getElementById("transitionPanel");
     transitionPanel.innerHTML =
@@ -306,98 +305,100 @@ exitBtn.onclick = () => {
     isFullscreen = false;
 };
 
-/* ---------------- NETWORK STATS (SAFE VERSION) ---------------- */
+/* ---------------- CONTROL BUTTONS ---------------- */
+const switchBtn = document.getElementById("switchBtn");
+const unoBtn = document.getElementById("unoOverlaysBtn");
+const clevrBtn = document.getElementById("clevrMediaBtn");
 
+switchBtn.onclick = () => {
+    const preview = document.getElementById("preview");
+    const program = document.getElementById("program");
+    const temp = preview.innerHTML;
+    preview.innerHTML = program.innerHTML;
+    program.innerHTML = temp;
+    highlightControlButton(switchBtn);
+};
+
+unoBtn.onclick = () => {
+    window.open("https://overlays.uno/library", "_blank");
+    highlightControlButton(unoBtn);
+};
+
+clevrBtn.onclick = () => {
+    window.open("https://my.clevr.media", "_blank");
+    highlightControlButton(clevrBtn);
+};
+
+function highlightControlButton(activeBtn) {
+    [switchBtn, unoBtn, clevrBtn].forEach(btn => btn.classList.remove("active"));
+    activeBtn.classList.add("active");
+}
+
+/* ---------------- NETWORK INFO ---------------- */
 const debugPanel = document.getElementById("debugPanel");
 
-const PING_SERVER = "https://www.google.com/favicon.ico";
-const SPEED_TEST_FILE = "https://speed.cloudflare.com/__down?bytes=2000000";
-const UPLOAD_SERVER = "https://speed.cloudflare.com/__up";
+function updateNetworkDisplay() {
+    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
 
-/* Ping */
-async function measurePing() {
-    const start = performance.now();
-    try {
-        await fetch(PING_SERVER + "?r=" + Math.random(), { mode: "no-cors" });
-        return Math.round(performance.now() - start);
-    } catch {
-        return -1;
+    if (!conn) {
+        debugPanel.innerHTML = `
+            <div style="font-size:12px; line-height:1.4;">
+                <span style="color:#f44;">Browser does not support real network stats.</span>
+            </div>
+        `;
+        return;
     }
-}
 
-/* Download */
-async function measureDownloadSpeed() {
-    const bytes = 2000000;
-    const start = performance.now();
-    try {
-        await fetch(SPEED_TEST_FILE + "&r=" + Math.random(), { mode: "no-cors" });
-        const sec = (performance.now() - start) / 1000;
-        return Math.round((bytes * 8) / sec / 1_000_000);
-    } catch {
-        return 0;
+    const rtt = conn.rtt || 0;
+    const type = conn.effectiveType || "unknown";
+
+    function getWifiBars(type) {
+        switch (type) {
+            case "slow-2g": return "▂___ (Very Weak)";
+            case "2g":      return "▂___ (Weak)";
+            case "3g":      return "▂▄__ (Fair)";
+            case "4g":      return "▂▄▆_ (Good)";
+            default:        return "▂___ (Unknown)";
+        }
     }
-}
 
-/* Upload */
-async function measureUploadSpeed() {
-    const data = new Blob(["x".repeat(1_000_000)]);
-    const start = performance.now();
-    try {
-        await fetch(UPLOAD_SERVER, { method: "POST", body: data, mode: "no-cors" });
-        const sec = (performance.now() - start) / 1000;
-        return Math.round((1_000_000 * 8) / sec / 1_000_000);
-    } catch {
-        return 0;
+    function getConnectionColor(ping, type) {
+        if (type === "slow-2g" || type === "2g") return "#ff0000";
+        if (type === "3g") return "#ffff00";
+        if (type === "4g" && ping < 120) return "#00ff00";
+        return "#555";
     }
-}
-
-function getWifiBars(speed) {
-    if (speed === 0) return "▂___ (Offline)";
-    if (speed < 5) return "▂___ (Weak)";
-    if (speed < 20) return "▂▄__ (Fair)";
-    if (speed < 50) return "▂▄▆_ (Good)";
-    return "▂▄▆█ (Excellent)";
-}
-
-function getConnectionColor(ping, down, up) {
-    if (ping < 0 || down === 0) return "#555";
-    if (ping < 60 && down > 40 && up > 10) return "#00ff00";
-    if (ping < 140 && down > 12) return "#ffff00";
-    return "#ff0000";
-}
-
-async function updateNetworkStats() {
-    const ping = await measurePing();
-    const down = await measureDownloadSpeed();
-    const up = await measureUploadSpeed();
 
     debugPanel.innerHTML = `
-        <div style="font-size:12px; line-height:1.4;">
+        <div style="font-size:12px; line-height:1.4;">            
             <div style="display:flex;align-items:center;gap:10px;">
                 <div style="
                     width:15px;
                     height:15px;
-                    background:${getConnectionColor(ping, down, up)};
+                    background:${getConnectionColor(rtt, type)};
                     border-radius:50%;
-                    box-shadow:0 0 6px ${getConnectionColor(ping, down, up)};
+                    box-shadow:0 0 6px ${getConnectionColor(rtt, type)};
                 "></div>
                 <span>Connection Quality</span>
             </div>
+
             <hr style="border-color:#444; margin:6px 0;">
-            <span style="color:#0f0;">Download:</span> ${down} Mbps<br>
-            <span style="color:#0f0;">Upload:</span> ${up} Mbps<br>
-            <span style="color:#0f0;">Ping:</span> ${ping >= 0 ? ping + " ms" : "Offline"}<br>
-            <span style="color:#0f0;">WiFi:</span> ${getWifiBars(down)}<br>
+
+            <span style="color:#0f0;">Ping:</span> ${rtt} ms<br>
+            <span style="color:#0f0;">Type:</span> ${type}<br>
+            <span style="color:#0f0;">WiFi:</span> ${getWifiBars(type)}<br>
         </div>
     `;
 }
 
-setInterval(updateNetworkStats, 5000);
-updateNetworkStats();
+updateNetworkDisplay();
+
+if (navigator.connection) {
+    navigator.connection.addEventListener("change", updateNetworkDisplay);
+}
 
 /* ---------------- INIT ---------------- */
 loadScenes();
-
 </script>
 
 </body>
