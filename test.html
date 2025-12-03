@@ -97,8 +97,11 @@
         border-radius: 3px;
         cursor: pointer;
     }
-    .control-buttons button:hover {
-        background: #4a4a4a;
+    /* remove hover highlight */
+    .control-buttons button:hover,
+    .control-buttons button.active {
+        background: #3a3a3a !important;
+        border-color: #555 !important;
     }
     .fullscreen-top {
         flex: 1 1 100%;
@@ -120,6 +123,11 @@
         display: none;
         z-index: 1000;
         box-shadow: 0 0 10px #000;
+    }
+    /* bigger debugging font */
+    #debugPanel {
+        font-size: 16px;
+        line-height: 1.5;
     }
 </style>
 </head>
@@ -161,7 +169,7 @@
                 <button id="switchBtn">Switch (Preview ↔ Program)</button>
                 <button id="unoOverlaysBtn">Uno Overlays</button>
                 <button id="clevrMediaBtn">Clevr.media</button>
-                <button id="exitBtn"></button>
+                <button id="exitBtn">Button</button>
             </div>
         </div>
     </div>
@@ -171,7 +179,6 @@
 
 <script>
 /* ---------------- SCENES + SOURCES ---------------- */
-
 const scenes = {
     "Uno Overlays": [
         { name: "Scoreboard", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV" },
@@ -195,19 +202,16 @@ let currentStreamIndex = 0;
 function loadScenes() {
     const list = document.getElementById("sceneList");
     list.innerHTML = "";
-
     Object.keys(scenes).forEach(scene => {
         const btn = document.createElement("button");
         btn.className = "list-btn";
         btn.textContent = scene;
-
         btn.onclick = () => {
             document.querySelectorAll("#sceneList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             currentScene = scene;
             loadSources(scene);
         };
-
         list.appendChild(btn);
     });
 }
@@ -215,12 +219,10 @@ function loadScenes() {
 function loadSources(scene) {
     const list = document.getElementById("sourceList");
     list.innerHTML = "";
-
     scenes[scene].forEach(source => {
         const btn = document.createElement("button");
         btn.className = "list-btn";
         btn.textContent = source.name;
-
         btn.onclick = () => {
             document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
@@ -229,7 +231,6 @@ function loadSources(scene) {
             loadPreview(source);
             updateStreamButtons(source);
         };
-
         list.appendChild(btn);
     });
 }
@@ -237,41 +238,33 @@ function loadSources(scene) {
 function loadPreview(source) {
     const preview = document.getElementById("preview");
     preview.innerHTML = '<div class="pane-title">Preview</div>';
-
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
-
         frame.src = source.urls ? source.urls[currentStreamIndex].url : source.url;
         frame.style.width = "100%";
         frame.style.height = frame.src.includes("overlays.uno") ? "350%" : "100%";
         frame.style.border = "none";
-
         preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
 }
 
-/* ---------- SAFE TRANSITION PANEL ---------- */
 function updateStreamButtons(source) {
     const transitionPanel = document.getElementById("transitionPanel");
     transitionPanel.innerHTML =
         '<p style="font-size:11px; margin:0; padding:4px; color:#888;">Transition controls...</p>';
-
     if (source.name === "Stream View" && source.urls) {
         source.urls.forEach((urlObj, i) => {
             const btn = document.createElement("button");
             btn.className = "list-btn";
             btn.textContent = urlObj.name;
-
             if (i === currentStreamIndex) btn.classList.add("active");
-
             btn.onclick = () => {
                 currentStreamIndex = i;
                 loadPreview(source);
                 updateStreamButtons(source);
             };
-
             transitionPanel.appendChild(btn);
         });
     }
@@ -284,7 +277,6 @@ const exitBtn = document.getElementById("exitFullscreenBtn");
 document.getElementById("fullscreenBtn").onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
-
     if (!isFullscreen) {
         top.classList.add("fullscreen-top");
         bottom.classList.add("hide-bottom");
@@ -316,61 +308,48 @@ switchBtn.onclick = () => {
     const temp = preview.innerHTML;
     preview.innerHTML = program.innerHTML;
     program.innerHTML = temp;
-    highlightControlButton(switchBtn);
 };
 
 unoBtn.onclick = () => {
     window.open("https://overlays.uno/library", "_blank");
-    highlightControlButton(unoBtn);
 };
 
 clevrBtn.onclick = () => {
     window.open("https://my.clevr.media", "_blank");
-    highlightControlButton(clevrBtn);
 };
-
-function highlightControlButton(activeBtn) {
-    [switchBtn, unoBtn, clevrBtn].forEach(btn => btn.classList.remove("active"));
-    activeBtn.classList.add("active");
-}
 
 /* ---------------- NETWORK INFO ---------------- */
 const debugPanel = document.getElementById("debugPanel");
 
 function updateNetworkDisplay() {
     const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection;
-
     if (!conn) {
         debugPanel.innerHTML = `
-            <div style="font-size:12px; line-height:1.4;">
+            <div style="font-size:16px; line-height:1.5;">
                 <span style="color:#f44;">Browser does not support real network stats.</span>
             </div>
         `;
         return;
     }
-
     const rtt = conn.rtt || 0;
     const type = conn.effectiveType || "unknown";
-
     function getWifiBars(type) {
         switch (type) {
             case "slow-2g": return "▂___ (Very Weak)";
-            case "2g":      return "▂___ (Weak)";
-            case "3g":      return "▂▄__ (Fair)";
-            case "4g":      return "▂▄▆_ (Good)";
-            default:        return "▂___ (Unknown)";
+            case "2g":      return "▂▄__ (Weak)";
+            case "3g":      return "▂▄▆_ (Fair)";
+            case "4g":      return "▂▄▆▉ (Good)";
+            default:        return "____ (Unknown)";
         }
     }
-
     function getConnectionColor(ping, type) {
         if (type === "slow-2g" || type === "2g") return "#ff0000";
         if (type === "3g") return "#ffff00";
         if (type === "4g" && ping < 120) return "#00ff00";
         return "#555";
     }
-
     debugPanel.innerHTML = `
-        <div style="font-size:12px; line-height:1.4;">            
+        <div style="font-size:16px; line-height:1.5;">            
             <div style="display:flex;align-items:center;gap:10px;">
                 <div style="
                     width:15px;
@@ -381,9 +360,7 @@ function updateNetworkDisplay() {
                 "></div>
                 <span>Connection Quality</span>
             </div>
-
             <hr style="border-color:#444; margin:6px 0;">
-
             <span style="color:#0f0;">Ping:</span> ${rtt} ms<br>
             <span style="color:#0f0;">Type:</span> ${type}<br>
             <span style="color:#0f0;">WiFi:</span> ${getWifiBars(type)}<br>
@@ -392,7 +369,6 @@ function updateNetworkDisplay() {
 }
 
 updateNetworkDisplay();
-
 if (navigator.connection) {
     navigator.connection.addEventListener("change", updateNetworkDisplay);
 }
