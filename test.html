@@ -17,7 +17,6 @@
         flex-direction: column;
         height: 100vh;
     }
-    /* TOP WINDOWS */
     .top {
         flex: 2;
         display: grid;
@@ -41,7 +40,6 @@
         opacity: 0.7;
         color: white;
     }
-    /* BOTTOM PANELS */
     .bottom {
         flex: 1;
         background: #252525;
@@ -71,7 +69,6 @@
         padding: 6px;
         overflow-y: auto;
     }
-    /* BUTTON STYLES */
     .list-btn {
         width: 100%;
         padding: 6px;
@@ -90,7 +87,6 @@
         background: #0066cc !important;
         border-color: #0a84ff !important;
     }
-    /* CONTROLS */
     .control-buttons button {
         width: 100%;
         padding: 6px;
@@ -104,7 +100,6 @@
     .control-buttons button:hover {
         background: #4a4a4a;
     }
-    /* FULLSCREEN MODE */
     .fullscreen-top {
         flex: 1 1 100%;
         height: 100vh !important;
@@ -112,7 +107,6 @@
     .hide-bottom {
         display: none !important;
     }
-    /* EXIT FULLSCREEN BUTTON */
     .circle-btn {
         position: fixed;
         bottom: 20px;
@@ -121,48 +115,45 @@
         height: 40px;
         border-radius: 50%;
         background: #ff5555;
-        color: white;
         border: none;
-        font-size: 20px;
         cursor: pointer;
         display: none;
         z-index: 1000;
         box-shadow: 0 0 10px #000;
     }
-    .circle-btn:hover {
-        background: #ff2222;
-    }
 </style>
 </head>
+
 <body>
 <div class="layout">
     <div class="top">
-        <div id="preview" class="pane">
-            <div class="pane-title">Preview</div>
-        </div>
-        <div id="program" class="pane">
-            <div class="pane-title">Program</div>
-        </div>
+        <div id="preview" class="pane"><div class="pane-title">Preview</div></div>
+        <div id="program" class="pane"><div class="pane-title">Program</div></div>
     </div>
+
     <div class="bottom">
         <div class="panel">
             <h3>Scenes</h3>
             <div id="sceneList" class="panel-box"></div>
         </div>
+
         <div class="panel">
             <h3>Sources</h3>
             <div id="sourceList" class="panel-box"></div>
         </div>
+
         <div class="panel">
             <h3>Debugging</h3>
-            <div class="panel-box">(Audio channels)</div>
+            <div class="panel-box" id="debugPanel">(Audio channels)</div>
         </div>
+
         <div class="panel">
             <h3>Scene Transitions</h3>
-            <div class="panel-box">
+            <div class="panel-box" id="transitionPanel">
                 <p style="font-size: 11px; margin: 0; padding: 4px; color: #888;">Transition controls...</p>
             </div>
         </div>
+
         <div class="panel">
             <h3>Controls</h3>
             <div class="control-buttons">
@@ -170,14 +161,18 @@
                 <button id="switchBtn">Switch (Preview ↔ Program)</button>
                 <button id="unoOverlaysBtn">Uno Overlays</button>
                 <button id="clevrMediaBtn">Clevr.media</button>
-                <button>Exit</button>
+                <button id="exitBtn"></button>
             </div>
         </div>
     </div>
 </div>
-<button id="exitFullscreenBtn" class="circle-btn" title="Exit Fullscreen">×</button>
+
+<button id="exitFullscreenBtn" class="circle-btn"></button>
+
 
 <script>
+/* ---------------- SCENES + SOURCES ---------------- */
+
 const scenes = {
     "Uno Overlays": [
         { name: "Scoreboard", type: "iframe", url: "https://app.overlays.uno/control/6TcUG4Se51lYVk2BhKJ8MV" },
@@ -188,7 +183,7 @@ const scenes = {
             { name: "Gym", url: "https://my.clevr.media/modocmedia" },
             { name: "Stadium", url: "https://my.clevr.media/lavegastadium" },
             { name: "Lavegaisd", url: "https://my.clevr.media/lavegaisd" }
-        ] },
+        ]},
         { name: "Statistics", type: "container" },
         { name: "Extra Container", type: "container" }
     ]
@@ -201,16 +196,19 @@ let currentStreamIndex = 0;
 function loadScenes() {
     const list = document.getElementById("sceneList");
     list.innerHTML = "";
+
     Object.keys(scenes).forEach(scene => {
         const btn = document.createElement("button");
         btn.className = "list-btn";
-        btn.innerText = scene;
+        btn.textContent = scene;
+
         btn.onclick = () => {
             document.querySelectorAll("#sceneList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             currentScene = scene;
             loadSources(scene);
         };
+
         list.appendChild(btn);
     });
 }
@@ -218,10 +216,12 @@ function loadScenes() {
 function loadSources(scene) {
     const list = document.getElementById("sourceList");
     list.innerHTML = "";
+
     scenes[scene].forEach(source => {
         const btn = document.createElement("button");
         btn.className = "list-btn";
-        btn.innerText = source.name;
+        btn.textContent = source.name;
+
         btn.onclick = () => {
             document.querySelectorAll("#sourceList button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
@@ -230,6 +230,7 @@ function loadSources(scene) {
             loadPreview(source);
             updateStreamButtons(source);
         };
+
         list.appendChild(btn);
     });
 }
@@ -241,74 +242,50 @@ function loadPreview(source) {
     if (source.type === "iframe") {
         const frame = document.createElement("iframe");
 
-        // Use multiple URLs if Stream View has them
-        if (source.urls) {
-            frame.src = source.urls[currentStreamIndex].url;
-        } else {
-            frame.src = source.url;
-        }
-
-        // Only Uno overlays get stretched size
-        const isUno = frame.src.includes("overlays.uno");
-
-        if (isUno) {
-            frame.style.width = "100%";
-            frame.style.height = "350%";
-        } else {
-            frame.style.width = "100%";
-            frame.style.height = "100%";
-        }
-
+        frame.src = source.urls ? source.urls[currentStreamIndex].url : source.url;
+        frame.style.width = "100%";
+        frame.style.height = frame.src.includes("overlays.uno") ? "350%" : "100%";
         frame.style.border = "none";
-        preview.appendChild(frame);
 
+        preview.appendChild(frame);
     } else {
         preview.innerHTML += `<div style="color:white; padding:20px;">${source.name} (Container)</div>`;
     }
 }
 
-// STREAM VIEW BUTTONS
+/* ---------- FIXED: SAFE TRANSITION PANEL ---------- */
 function updateStreamButtons(source) {
-    const transitionPanel = document.querySelector(".panel:nth-child(4) .panel-box");
-    transitionPanel.innerHTML = '<p style="font-size: 11px; margin: 0; padding: 4px; color: #888;">Transition controls...</p>';
+    const transitionPanel = document.getElementById("transitionPanel");
+    transitionPanel.innerHTML =
+        '<p style="font-size:11px; margin:0; padding:4px; color:#888;">Transition controls...</p>';
 
     if (source.name === "Stream View" && source.urls) {
         source.urls.forEach((urlObj, i) => {
             const btn = document.createElement("button");
             btn.className = "list-btn";
-            btn.innerText = urlObj.name; // Use custom names
+            btn.textContent = urlObj.name;
+
             if (i === currentStreamIndex) btn.classList.add("active");
+
             btn.onclick = () => {
                 currentStreamIndex = i;
                 loadPreview(source);
                 updateStreamButtons(source);
             };
+
             transitionPanel.appendChild(btn);
         });
     }
 }
 
-// --- EXISTING CONTROLS ---
-document.getElementById("switchBtn").onclick = () => {
-    const program = document.getElementById("program");
-    const preview = document.getElementById("preview");
-    const temp = preview.innerHTML;
-    preview.innerHTML = program.innerHTML.replace("Program", "Preview");
-    program.innerHTML = temp.replace("Preview", "Program");
-};
-
-document.getElementById("unoOverlaysBtn").onclick = () => {
-    window.open('https://overlays.uno/library', '_blank');
-};
-document.getElementById("clevrMediaBtn").onclick = () => {
-    window.open('https://my.clevr.media/portal/login.php', '_blank');
-};
-
+/* ---------------- FULLSCREEN ---------------- */
 let isFullscreen = false;
 const exitBtn = document.getElementById("exitFullscreenBtn");
+
 document.getElementById("fullscreenBtn").onclick = () => {
     const top = document.querySelector(".top");
     const bottom = document.querySelector(".bottom");
+
     if (!isFullscreen) {
         top.classList.add("fullscreen-top");
         bottom.classList.add("hide-bottom");
@@ -321,16 +298,107 @@ document.getElementById("fullscreenBtn").onclick = () => {
         isFullscreen = false;
     }
 };
+
 exitBtn.onclick = () => {
-    const top = document.querySelector(".top");
-    const bottom = document.querySelector(".bottom");
-    top.classList.remove("fullscreen-top");
-    bottom.classList.remove("hide-bottom");
+    document.querySelector(".top").classList.remove("fullscreen-top");
+    document.querySelector(".bottom").classList.remove("hide-bottom");
     exitBtn.style.display = "none";
     isFullscreen = false;
 };
 
+/* ---------------- NETWORK STATS (SAFE VERSION) ---------------- */
+
+const debugPanel = document.getElementById("debugPanel");
+
+const PING_SERVER = "https://www.google.com/favicon.ico";
+const SPEED_TEST_FILE = "https://speed.cloudflare.com/__down?bytes=2000000";
+const UPLOAD_SERVER = "https://speed.cloudflare.com/__up";
+
+/* Ping */
+async function measurePing() {
+    const start = performance.now();
+    try {
+        await fetch(PING_SERVER + "?r=" + Math.random(), { mode: "no-cors" });
+        return Math.round(performance.now() - start);
+    } catch {
+        return -1;
+    }
+}
+
+/* Download */
+async function measureDownloadSpeed() {
+    const bytes = 2000000;
+    const start = performance.now();
+    try {
+        await fetch(SPEED_TEST_FILE + "&r=" + Math.random(), { mode: "no-cors" });
+        const sec = (performance.now() - start) / 1000;
+        return Math.round((bytes * 8) / sec / 1_000_000);
+    } catch {
+        return 0;
+    }
+}
+
+/* Upload */
+async function measureUploadSpeed() {
+    const data = new Blob(["x".repeat(1_000_000)]);
+    const start = performance.now();
+    try {
+        await fetch(UPLOAD_SERVER, { method: "POST", body: data, mode: "no-cors" });
+        const sec = (performance.now() - start) / 1000;
+        return Math.round((1_000_000 * 8) / sec / 1_000_000);
+    } catch {
+        return 0;
+    }
+}
+
+function getWifiBars(speed) {
+    if (speed === 0) return "▂___ (Offline)";
+    if (speed < 5) return "▂___ (Weak)";
+    if (speed < 20) return "▂▄__ (Fair)";
+    if (speed < 50) return "▂▄▆_ (Good)";
+    return "▂▄▆█ (Excellent)";
+}
+
+function getConnectionColor(ping, down, up) {
+    if (ping < 0 || down === 0) return "#555";
+    if (ping < 60 && down > 40 && up > 10) return "#00ff00";
+    if (ping < 140 && down > 12) return "#ffff00";
+    return "#ff0000";
+}
+
+async function updateNetworkStats() {
+    const ping = await measurePing();
+    const down = await measureDownloadSpeed();
+    const up = await measureUploadSpeed();
+
+    debugPanel.innerHTML = `
+        <div style="font-size:12px; line-height:1.4;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="
+                    width:15px;
+                    height:15px;
+                    background:${getConnectionColor(ping, down, up)};
+                    border-radius:50%;
+                    box-shadow:0 0 6px ${getConnectionColor(ping, down, up)};
+                "></div>
+                <span>Connection Quality</span>
+            </div>
+            <hr style="border-color:#444; margin:6px 0;">
+            <span style="color:#0f0;">Download:</span> ${down} Mbps<br>
+            <span style="color:#0f0;">Upload:</span> ${up} Mbps<br>
+            <span style="color:#0f0;">Ping:</span> ${ping >= 0 ? ping + " ms" : "Offline"}<br>
+            <span style="color:#0f0;">WiFi:</span> ${getWifiBars(down)}<br>
+        </div>
+    `;
+}
+
+setInterval(updateNetworkStats, 5000);
+updateNetworkStats();
+
+/* ---------------- INIT ---------------- */
 loadScenes();
+
 </script>
+
 </body>
 </html>
