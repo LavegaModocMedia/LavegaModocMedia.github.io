@@ -8,48 +8,71 @@ move_step = 10      -- pixels per move
 zoom_step = 0.1     -- scale per zoom
 
 ----------------------------------------------------
--- HELPERS
+-- HELPER FUNCTIONS
 ----------------------------------------------------
-function move_source(direction)
-    local source = obs.obs_get_source_by_name(source_name)
-    if not source then return end
+-- Get scene item by source name
+local function get_scene_item(source_name)
+    local scenes = obs.obs_frontend_get_scenes()
+    if not scenes then return nil end
 
-    local settings = obs.obs_source_get_settings(source)
-    local x = obs.obs_data_get_int(settings, "cx") or 0
-    local y = obs.obs_data_get_int(settings, "cy") or 0
-    local scale = obs.obs_data_get_double(settings, "scale") or 1
-
-    if direction == "up" then y = y - move_step
-    elseif direction == "down" then y = y + move_step
-    elseif direction == "left" then x = x - move_step
-    elseif direction == "right" then x = x + move_step
+    for _, scene in ipairs(scenes) do
+        local scene_items = obs.obs_scene_enum_items(scene)
+        for _, item in ipairs(scene_items) do
+            local item_source = obs.obs_sceneitem_get_source(item)
+            if item_source and obs.obs_source_get_name(item_source) == source_name then
+                obs.obs_source_release(item_source)
+                obs.sceneitem_release(scene_items)
+                obs.obs_scene_release(scene)
+                return item
+            end
+            if item_source then obs.obs_source_release(item_source) end
+        end
+        obs.sceneitem_release(scene_items)
+        obs.obs_scene_release(scene)
     end
 
-    obs.obs_data_set_int(settings, "cx", x)
-    obs.obs_data_set_int(settings, "cy", y)
-
-    obs.obs_source_update(source, settings)
-    obs.obs_data_release(settings)
-    obs.obs_source_release(source)
+    obs.sceneitem_release(scenes)
+    return nil
 end
 
-function zoom_source(action)
-    local source = obs.obs_get_source_by_name(source_name)
-    if not source then return end
+-- Move scene item
+local function move_source(direction)
+    local item = get_scene_item(source_name)
+    if not item then return end
 
-    local settings = obs.obs_source_get_settings(source)
-    local scale = obs.obs_data_get_double(settings, "scale") or 1
+    local pos = obs.vec2()
+    pos = obs.obs_sceneitem_get_pos(item)
 
-    if action == "in" then
-        scale = scale + zoom_step
-    elseif action == "out" then
-        scale = math.max(0.1, scale - zoom_step)
+    if direction == "up" then
+        pos.y = pos.y - move_step
+    elseif direction == "down" then
+        pos.y = pos.y + move_step
+    elseif direction == "left" then
+        pos.x = pos.x - move_step
+    elseif direction == "right" then
+        pos.x = pos.x + move_step
     end
 
-    obs.obs_data_set_double(settings, "scale", scale)
-    obs.obs_source_update(source, settings)
-    obs.obs_data_release(settings)
-    obs.obs_source_release(source)
+    obs.obs_sceneitem_set_pos(item, pos)
+end
+
+-- Zoom scene item
+local function zoom_source(action)
+    local item = get_scene_item(source_name)
+    if not item then return end
+
+    local scale = obs.vec2()
+    scale = obs.obs_sceneitem_get_scale(item)
+
+    if action == "in" then
+        scale.x = scale.x + zoom_step
+        scale.y = scale.y + zoom_step
+    elseif action == "out" then
+        scale.x = math.max(0.01, scale.x - zoom_step)
+        scale.y = math.max(0.01, scale.y - zoom_step)
+    end
+
+    obs.obs_sceneitem_set_scale(item, scale)
 end
 
 ----------------------------------------------------
@@ -76,7 +99,7 @@ function script_properties()
     obs.source_list_release(sources)
 
     obs.obs_properties_add_int(props, "move_step", "Move Step (px)", 1, 100, 1)
-    obs.obs_properties_add_float(props, "zoom_step", "Zoom Step", 0.01, 1.0, 0.01)
+    obs.obs_properties_add_float(props, "zoom_step", "Zoom Step", 0.01, 2.0, 0.01)
 
     return props
 end
