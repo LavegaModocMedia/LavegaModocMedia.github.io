@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OBS Source Controller</title>
+
+<style>
+body {
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+input, button {
+  font-size:18px;
+  padding:10px;
+  margin:5px;
+}
+
+button {
+  width:120px;
+  cursor:pointer;
+}
+
+.controls {
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>OBS Camera Source Controller</h2>
+
+<input id="sourceName" placeholder="Enter Source Name">
+
+<br><br>
+
+<button onclick="connectOBS()">Connect</button>
+
+<div class="controls">
+
+<h3>Move</h3>
+
+<button onclick="move(0,-20)">Up</button><br>
+<button onclick="move(-20,0)">Left</button>
+<button onclick="move(20,0)">Right</button><br>
+<button onclick="move(0,20)">Down</button>
+
+<h3>Zoom</h3>
+
+<button onclick="zoom(0.1)">Zoom In</button>
+<button onclick="zoom(-0.1)">Zoom Out</button>
+
+<h3>Reset</h3>
+
+<button onclick="resetTransform()">Reset</button>
+
+</div>
+
+<script>
+
+let ws;
+let currentX = 0;
+let currentY = 0;
+let currentScale = 1;
+
+function connectOBS(){
+  ws = new WebSocket("ws://localhost:4455");
+
+  ws.onopen = () => {
+    alert("Connected to OBS");
+    identify();
+  };
+}
+
+function identify(){
+  ws.send(JSON.stringify({
+    op:1,
+    d:{
+      rpcVersion:1
+    }
+  }));
+}
+
+function move(dx,dy){
+  currentX += dx;
+  currentY += dy;
+  updateTransform();
+}
+
+function zoom(amount){
+  currentScale += amount;
+  if(currentScale < 0.1) currentScale = 0.1;
+  updateTransform();
+}
+
+function resetTransform(){
+  currentX = 0;
+  currentY = 0;
+  currentScale = 1;
+  updateTransform();
+}
+
+function updateTransform(){
+  const source = document.getElementById("sourceName").value;
+
+  ws.send(JSON.stringify({
+    op:6,
+    d:{
+      requestType:"SetSceneItemTransform",
+      requestId:"1",
+      requestData:{
+        sceneName:null,
+        sourceName:source,
+        sceneItemTransform:{
+          positionX:currentX,
+          positionY:currentY,
+          scaleX:currentScale,
+          scaleY:currentScale
+        }
+      }
+    }
+  }));
+}
+
+</script>
+
+</body>
+</html>
