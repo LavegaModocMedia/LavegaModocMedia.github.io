@@ -1,112 +1,100 @@
 obs = obslua
 
-----------------------------------------------------
--- USER SETTINGS
-----------------------------------------------------
-source_name = ""    -- name of the source to move
-move_speed = 5      -- pixels per key press
-enabled = true      -- whether movement is active
+-- Script settings
+source_name = ""      -- Name of the source to move
+move_speed = 5        -- Base movement speed in pixels per tick
+speed_increment = 1   -- How much speed increases while holding key
+max_speed = 20        -- Max speed
+is_enabled = false    -- Movement toggle
+current_speed = move_speed
 
-----------------------------------------------------
--- INTERNAL STATE
-----------------------------------------------------
-hotkey_left = nil
-hotkey_right = nil
+-- Key states
+left_pressed = false
+right_pressed = false
 
-----------------------------------------------------
--- HELPERS
-----------------------------------------------------
-local function get_scene_item(source_name)
-    local scene = obs.obs_frontend_get_current_scene()
-    if not scene then return nil end
-    local scene = obs.obs_scene_from_source(scene)
-    
-    local items = obs.obs_scene_enum_items(scene)
-    for _, item in ipairs(items) do
-        local item_source = obs.obs_sceneitem_get_source(item)
-        if item_source and obs.obs_source_get_name(item_source) == source_name then
-            if item_source then obs.obs_source_release(item_source) end
-            obs.sceneitem_release(items)
-            return item
-        end
-        if item_source then obs.obs_source_release(item_source) end
+-- UI text for toggle
+toggle_text = "OFF"
+
+-- Function to move source
+function move_source()
+    if not is_enabled or source_name == "" then
+        return
     end
-    obs.sceneitem_release(items)
-    return nil
+
+    local source = obs.obs_get_source_by_name(source_name)
+    if source ~= nil then
+        local settings = obs.obs_source_get_settings(source)
+        local x = obs.obs_data_get_int(settings, "pos_x")
+        local y = obs.obs_data_get_int(settings, "pos_y")
+
+        if left_pressed then
+            x = x - current_speed
+            current_speed = math.min(current_speed + speed_increment, max_speed)
+        elseif right_pressed then
+            x = x + current_speed
+            current_speed = math.min(current_speed + speed_increment, max_speed)
+        else
+            current_speed = move_speed
+        end
+
+        obs.obs_data_set_int(settings, "pos_x", x)
+        obs.obs_source_update(source, settings)
+        obs.obs_data_release(settings)
+        obs.obs_source_release(source)
+    end
 end
 
-local function move_source(dx)
-    if not enabled then return end  -- skip if disabled
-
-    local item = get_scene_item(source_name)
-    if not item then return end
-
-    local pos = obs.vec2()
-    pos = obs.obs_sceneitem_get_pos(item)
-    pos.x = pos.x + dx
-    obs.obs_sceneitem_set_pos(item, pos)
+-- Timer function
+function tick()
+    move_source()
 end
 
-----------------------------------------------------
--- HOTKEY CALLBACKS
-----------------------------------------------------
-function move_left(pressed)
-    if not pressed then return end
-    move_source(-move_speed)
+-- Script UI
+function script_description()
+    return "Move a source left/right with arrow keys. Toggle on/off with button."
 end
 
-function move_right(pressed)
-    if not pressed then return end
-    move_source(move_speed)
-end
-
-----------------------------------------------------
--- SCRIPT PROPERTIES
-----------------------------------------------------
 function script_properties()
     local props = obs.obs_properties_create()
 
-    obs.obs_properties_add_text(props, "source", "Source Name", obs.OBS_TEXT_DEFAULT)
-    obs.obs_properties_add_int(props, "move_speed", "Move Speed (px)", 1, 50, 1)
-
-    -- Toggle On/Off button
-    local p = obs.obs_properties_add_button(props, "toggle_enabled", "Toggle On/Off", function()
-        enabled = not enabled
-        if enabled then
-            obs.script_log(obs.LOG_INFO, "Source movement ENABLED")
-        else
-            obs.script_log(obs.LOG_INFO, "Source movement DISABLED")
-        end
-    end)
+    obs.obs_properties_add_text(props, "source_name", "Source Name", obs.OBS_TEXT_DEFAULT)
+    obs.obs_properties_add_button(props, "toggle_button", "Toggle On/Off", toggle_button_pressed)
 
     return props
 end
 
-----------------------------------------------------
--- SCRIPT UPDATE
-----------------------------------------------------
 function script_update(settings)
-    source_name = obs.obs_data_get_string(settings, "source")
-    move_speed = obs.obs_data_get_int(settings, "move_speed")
+    source_name = obs.obs_data_get_string(settings, "source_name")
 end
 
-----------------------------------------------------
--- HOTKEY REGISTRATION
-----------------------------------------------------
+-- Toggle button
+function toggle_button_pressed(props, prop)
+    is_enabled = not is_enabled
+    toggle_text = is_enabled and "ON" or "OFF"
+    print("Movement is now: " .. toggle_text)
+    return false
+end
+
+-- Key press detection
+function on_event(event)
+    if event == obs.OBS_FRONTEND_EVENT_KEY_DOWN then
+        local key = obs.obs_hotkey_get_key(obs.OBS_KEY_LEFT)
+        if key then left_pressed = true end
+        key = obs.obs_hotkey_get_key(obs.OBS_KEY_RIGHT)
+        if key then right_pressed = true end
+    elseif event == obs.OBS_FRONTEND_EVENT_KEY_UP then
+        local key = obs.obs_hotkey_get_key(obs.OBS_KEY_LEFT)
+        if key then left_pressed = false end
+        key = obs.obs_hotkey_get_key(obs.OBS_KEY_RIGHT)
+        if key then right_pressed = false end
+    end
+end
+
+-- Script load/unload
 function script_load(settings)
-    hotkey_left = obs.obs_hotkey_register_frontend("move_left", "Move Source Left", move_left)
-    hotkey_right = obs.obs_hotkey_register_frontend("move_right", "Move Source Right", move_right)
-
-    -- load saved hotkeys
-    local hotkey_save_array = obs.obs_data_get_array(settings, "hotkeys")
-    obs.obs_hotkey_load(hotkey_left, hotkey_save_array)
-    obs.obs_hotkey_load(hotkey_right, hotkey_save_array)
-    obs.obs_data_array_release(hotkey_save_array)
+    obs.timer_add(tick, 16)  -- roughly 60fps
 end
 
-function script_save(settings)
-    local hotkey_save_array = obs.obs_hotkey_save(hotkey_left)
-    obs.obs_hotkey_save(hotkey_right, hotkey_save_array)
-    obs.obs_data_set_array(settings, "hotkeys", hotkey_save_array)
-    obs.obs_data_array_release(hotkey_save_array)
+function script_unload()
+    obs.timer_remove(tick)
 end
