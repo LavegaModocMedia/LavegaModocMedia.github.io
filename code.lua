@@ -14,6 +14,10 @@ is_enabled = false    -- Toggle for movement
 left_pressed = false
 right_pressed = false
 
+-- Hotkey objects
+left_hotkey = nil
+right_hotkey = nil
+
 -- Move the source each tick
 function move_source()
     if not is_enabled then return end
@@ -76,37 +80,36 @@ function right_pressed_callback(pressed)
     right_pressed = pressed
 end
 
--- Register hotkeys
+-- Load script
 function script_load(settings)
     obs.timer_add(tick, 16)  -- roughly 60 FPS
 
-    local left_hotkey_id = obs.obs_hotkey_register_frontend("left_move", "Move Left", left_pressed_callback)
-    local right_hotkey_id = obs.obs_hotkey_register_frontend("right_move", "Move Right", right_pressed_callback)
+    -- Register hotkeys
+    left_hotkey = obs.obs_hotkey_register_frontend("left_move", "Move Left", left_pressed_callback)
+    right_hotkey = obs.obs_hotkey_register_frontend("right_move", "Move Right", right_pressed_callback)
 
-    -- Load hotkeys from saved settings
-    local hotkey_save_array = obs.obs_data_get_array(settings, "left_move")
-    obs.obs_hotkey_load(left_hotkey_id, hotkey_save_array)
-    obs.obs_data_array_release(hotkey_save_array)
+    -- Load saved hotkeys
+    local left_array = obs.obs_data_get_array(settings, "left_move")
+    obs.obs_hotkey_load(left_hotkey, left_array)
+    obs.obs_data_array_release(left_array)
 
-    hotkey_save_array = obs.obs_data_get_array(settings, "right_move")
-    obs.obs_hotkey_load(right_hotkey_id, hotkey_save_array)
-    obs.obs_data_array_release(hotkey_save_array)
+    local right_array = obs.obs_data_get_array(settings, "right_move")
+    obs.obs_hotkey_load(right_hotkey, right_array)
+    obs.obs_data_array_release(right_array)
 end
 
+-- Save script
 function script_save(settings)
-    -- Save hotkeys
-    local left_hotkey_id = obs.obs_hotkey_get_id("left_move")
-    local right_hotkey_id = obs.obs_hotkey_get_id("right_move")
+    local left_array = obs.obs_hotkey_save(left_hotkey)
+    obs.obs_data_set_array(settings, "left_move", left_array)
+    obs.obs_data_array_release(left_array)
 
-    local left_hotkey_array = obs.obs_hotkey_save(left_hotkey_id)
-    obs.obs_data_set_array(settings, "left_move", left_hotkey_array)
-    obs.obs_data_array_release(left_hotkey_array)
-
-    local right_hotkey_array = obs.obs_hotkey_save(right_hotkey_id)
-    obs.obs_data_set_array(settings, "right_move", right_hotkey_array)
-    obs.obs_data_array_release(right_hotkey_array)
+    local right_array = obs.obs_hotkey_save(right_hotkey)
+    obs.obs_data_set_array(settings, "right_move", right_array)
+    obs.obs_data_array_release(right_array)
 end
 
+-- Unload script
 function script_unload()
     obs.timer_remove(tick)
 end
