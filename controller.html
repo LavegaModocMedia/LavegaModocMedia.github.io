@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>OBS Camera Remote</title>
+
+<style>
+body {
+    background:#111;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+button {
+    width:100px;
+    height:60px;
+    font-size:18px;
+    margin:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>OBS Camera Controller</h1>
+
+<div>
+    <button onclick="send('up')">▲</button>
+</div>
+
+<div>
+    <button onclick="send('left')">◀</button>
+    <button onclick="send('down')">▼</button>
+    <button onclick="send('right')">▶</button>
+</div>
+
+<br>
+
+<div>
+    <button onclick="send('zoom_in')">Zoom +</button>
+    <button onclick="send('zoom_out')">Zoom -</button>
+</div>
+
+<script>
+let socket = new WebSocket("ws://127.0.0.1:4455");
+
+socket.onopen = () => {
+    console.log("Connected");
+};
+
+function send(cmd){
+    socket.send(cmd);
+}
+</script>
+
+</body>
+</html>
