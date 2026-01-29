@@ -22,40 +22,56 @@ right_hotkey = nil
 function move_source()
     if not is_enabled then return end
 
-    local scene_source = nil
+    -- Move in Program (live) scene
+    local program_scene_source = obs.obs_frontend_get_current_program_scene()
+    if program_scene_source then
+        local program_scene = obs.obs_scene_from_source(program_scene_source)
+        if program_scene then
+            local item = obs.obs_scene_find_source(program_scene, source_name)
+            if item then
+                local pos = obs.vec2()
+                obs.obs_sceneitem_get_pos(item, pos)
 
-    -- Check if Studio Mode is active
+                if left_pressed then
+                    pos.x = pos.x - current_speed
+                    current_speed = math.min(current_speed + speed_increment, max_speed)
+                elseif right_pressed then
+                    pos.x = pos.x + current_speed
+                    current_speed = math.min(current_speed + speed_increment, max_speed)
+                else
+                    current_speed = move_speed
+                end
+
+                obs.obs_sceneitem_set_pos(item, pos)
+            end
+        end
+        obs.obs_source_release(program_scene_source)
+    end
+
+    -- Also move in Preview scene if Studio Mode is active
     if obs.obs_frontend_preview_program_mode_active() then
-        -- Studio Mode active, move in preview scene
-        scene_source = obs.obs_frontend_get_current_preview_scene()
-    else
-        -- Studio Mode inactive, move in normal scene by name
-        scene_source = obs.obs_get_source_by_name(scene_name)
+        local preview_scene_source = obs.obs_frontend_get_current_preview_scene()
+        if preview_scene_source then
+            local preview_scene = obs.obs_scene_from_source(preview_scene_source)
+            if preview_scene then
+                local item = obs.obs_scene_find_source(preview_scene, source_name)
+                if item then
+                    local pos = obs.vec2()
+                    obs.obs_sceneitem_get_pos(item, pos)
+
+                    -- Apply same movement
+                    if left_pressed then
+                        pos.x = pos.x - current_speed
+                    elseif right_pressed then
+                        pos.x = pos.x + current_speed
+                    end
+
+                    obs.obs_sceneitem_set_pos(item, pos)
+                end
+            end
+            obs.obs_source_release(preview_scene_source)
+        end
     end
-
-    if not scene_source then return end
-
-    local scene = obs.obs_scene_from_source(scene_source)
-    obs.obs_source_release(scene_source)
-    if not scene then return end
-
-    local item = obs.obs_scene_find_source(scene, source_name)
-    if not item then return end
-
-    local pos = obs.vec2()
-    obs.obs_sceneitem_get_pos(item, pos)
-
-    if left_pressed then
-        pos.x = pos.x - current_speed
-        current_speed = math.min(current_speed + speed_increment, max_speed)
-    elseif right_pressed then
-        pos.x = pos.x + current_speed
-        current_speed = math.min(current_speed + speed_increment, max_speed)
-    else
-        current_speed = move_speed
-    end
-
-    obs.obs_sceneitem_set_pos(item, pos)
 end
 
 -- Timer tick
@@ -72,7 +88,7 @@ end
 
 -- Script UI
 function script_description()
-    return "Move 'Atem Mini Pro' left/right in 'Camera Scene'. Works in Studio Mode as well. Use hotkeys to control movement."
+    return "Move 'Atem Mini Pro' left/right in 'Camera Scene'. Works continuously in Program (live) scene and Preview in Studio Mode. Use hotkeys to control movement."
 end
 
 function script_properties()
