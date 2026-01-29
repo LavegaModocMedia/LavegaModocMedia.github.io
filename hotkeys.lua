@@ -1,12 +1,11 @@
 obs = obslua
 
--- Configuration
+-- Default settings
 scene_name = "Camera Scene"
 source_name = "Atem Mini Pro"
-
-move_speed = 5
-speed_increment = 1
-max_speed = 20
+move_speed = 5        -- Base speed in pixels per tick
+speed_increment = 1   -- Speed increase per tick while holding
+max_speed = 20        -- Maximum speed
 current_speed = move_speed
 is_enabled = false
 
@@ -18,15 +17,10 @@ right_pressed = false
 left_hotkey = nil
 right_hotkey = nil
 
--- Move the source each tick
-function move_source()
-    if not is_enabled then return end
-
-    local scene_source = obs.obs_get_source_by_name(scene_name)
+-- Move source in a given scene
+function move_source_in_scene(scene_source)
     if not scene_source then return end
-
     local scene = obs.obs_scene_from_source(scene_source)
-    obs.obs_source_release(scene_source)
     if not scene then return end
 
     local item = obs.obs_scene_find_source(scene, source_name)
@@ -48,6 +42,21 @@ function move_source()
     obs.obs_sceneitem_set_pos(item, pos)
 end
 
+-- Main movement function
+function move_source()
+    if not is_enabled then return end
+
+    -- Move in Preview scene
+    local preview_scene_source = obs.obs_frontend_get_current_preview_scene()
+    move_source_in_scene(preview_scene_source)
+    if preview_scene_source then obs.obs_source_release(preview_scene_source) end
+
+    -- Move in Program scene
+    local program_scene_source = obs.obs_frontend_get_program_scene()
+    move_source_in_scene(program_scene_source)
+    if program_scene_source then obs.obs_source_release(program_scene_source) end
+end
+
 -- Timer tick
 function tick()
     move_source()
@@ -62,13 +71,19 @@ end
 
 -- Script UI
 function script_description()
-    return "Move 'Atem Mini Pro' left/right in 'Camera Scene'. Use hotkeys to control movement."
+    return "Move 'Atem Mini Pro' left/right in 'Camera Scene'. Works in Studio Mode. Use hotkeys."
 end
 
 function script_properties()
     local props = obs.obs_properties_create()
     obs.obs_properties_add_button(props, "toggle_button", "Toggle On/Off", toggle_button_pressed)
+    obs.obs_properties_add_int(props, "move_speed", "Movement Speed", 1, 50, 1)
     return props
+end
+
+function script_update(settings)
+    move_speed = obs.obs_data_get_int(settings, "move_speed")
+    current_speed = move_speed
 end
 
 -- Hotkey callbacks
