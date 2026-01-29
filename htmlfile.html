@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>OBS Dock</title>
+<title>OBS Source Controller</title>
 
 <style>
 :root {
@@ -15,88 +15,20 @@
     --radius: 10px;
 }
 
-* {
-    box-sizing: border-box;
-    font-family: Segoe UI, Roboto, Arial, sans-serif;
-}
-
-body {
-    margin: 0;
-    padding: 10px;
-    background: var(--bg);
-    color: var(--text);
-}
-
-/* CONTAINERS ONLY */
-.panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px;
-    margin-bottom: 8px;
-}
-
-/* HIDDEN UNTIL CONNECTED */
-.controls {
-    display: none;
-}
-
-/* SCORE TITLES */
-.counter-title {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-bottom: 6px;
-}
-
-/* BUTTON ROW */
-.buttons {
-    display: flex;
-    gap: 6px;
-}
-
-/* SHARP BUTTONS */
-button {
-    flex: 1;
-    padding: 8px;
-    background: #3a3a3a;
-    border: 1px solid var(--border);
-    border-radius: 0;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-button:hover {
-    background: #4a4a4a;
-}
-
+* { box-sizing: border-box; font-family: Segoe UI, Roboto, Arial, sans-serif; }
+body { margin: 0; padding: 10px; background: var(--bg); color: var(--text); }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; }
+.controls { display: none; }
+.counter-title { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+.buttons { display: flex; gap: 6px; }
+button { flex: 1; padding: 8px; background: #3a3a3a; border: 1px solid var(--border); border-radius: 0; color: white; cursor: pointer; font-size: 14px; }
+button:hover { background: #4a4a4a; }
 .inc { background: #2e7d32; }
 .dec { background: #c62828; }
 .reset { background: #6d6d6d; }
-
-.toggle {
-    background: #314bb1;
-    border: none;
-}
-
-/* INPUTS + DROPDOWN (SHARP) */
-input,
-select {
-    width: 100%;
-    padding: 6px;
-    margin-bottom: 6px;
-    background: #111;
-    color: white;
-    border: 1px solid var(--border);
-    border-radius: 0;
-}
-
-/* STATUS */
-.status {
-    font-size: 12px;
-    margin-top: 6px;
-}
-
+.toggle { background: #314bb1; border: none; }
+input, select { width: 100%; padding: 6px; margin-bottom: 6px; background: #111; color: white; border: 1px solid var(--border); border-radius: 0; }
+.status { font-size: 12px; margin-top: 6px; }
 .connected { color: var(--success); }
 .disconnected { color: var(--danger); }
 </style>
@@ -104,37 +36,36 @@ select {
 
 <body>
 
-<!-- SCORE + QUARTER CONTROLS -->
+<!-- SOURCE CONTROLS -->
 <div id="controls" class="controls">
 
     <div class="panel">
-        <div class="counter-title">LV Score</div>
+        <div class="counter-title">Scene</div>
+        <input id="scene" placeholder="Scene Name">
+    </div>
+
+    <div class="panel">
+        <div class="counter-title">Source</div>
+        <input id="source" placeholder="Source Name">
+    </div>
+
+    <div class="panel">
+        <div class="counter-title">Move</div>
         <div class="buttons">
-            <button class="inc" onclick="hotkey('counter1_inc')">➕</button>
-            <button class="dec" onclick="hotkey('counter1_dec')">➖</button>
-            <button class="reset" onclick="hotkey('counter1_reset')">🔄</button>
+            <button class="inc" onclick="sendCommand('up')">⬆</button>
+            <button class="dec" onclick="sendCommand('down')">⬇</button>
+            <button class="reset" onclick="sendCommand('left')">⬅</button>
+            <button class="reset" onclick="sendCommand('right')">➡</button>
         </div>
     </div>
 
     <div class="panel">
-        <div class="counter-title">Opponent Score</div>
+        <div class="counter-title">Scale</div>
         <div class="buttons">
-            <button class="inc" onclick="hotkey('counter2_inc')">➕</button>
-            <button class="dec" onclick="hotkey('counter2_dec')">➖</button>
-            <button class="reset" onclick="hotkey('counter2_reset')">🔄</button>
+            <button class="inc" onclick="sendCommand('bigger')">➕ Bigger</button>
+            <button class="dec" onclick="sendCommand('smaller')">➖ Smaller</button>
+            <button class="reset" onclick="sendCommand('reset')">🔄 Reset</button>
         </div>
-    </div>
-
-    <!-- QUARTER DROPDOWN -->
-    <div class="panel">
-        <div class="counter-title">Quarter</div>
-        <select id="periodSelect" onchange="setPeriod()">
-            <option value="period_1">1st</option>
-            <option value="period_2">2nd</option>
-            <option value="period_half">Half</option>
-            <option value="period_3">3rd</option>
-            <option value="period_4">4th</option>
-        </select>
     </div>
 
 </div>
@@ -163,21 +94,25 @@ select {
 <script>
 let socket;
 let identified = false;
-const STORE = "obsDualCounter";
+const STORE = "obsSourceController";
 
-/* RESTORE SAVED CONNECTION */
+/* RESTORE SAVED CONNECTION AND SCENE/SOURCE */
 (function () {
     const s = JSON.parse(localStorage.getItem(STORE) || "{}");
-    ip.value = s.ip || "localhost";
+    ip.value = s.ip || "10.111.0.61";
     port.value = s.port || "4455";
     password.value = s.password || "";
+    scene.value = s.scene || "Camera Scene";
+    source.value = s.source || "Atem Mini Pro";
 })();
 
 function save() {
     localStorage.setItem(STORE, JSON.stringify({
         ip: ip.value,
         port: port.value,
-        password: password.value
+        password: password.value,
+        scene: scene.value,
+        source: source.value
     }));
 }
 
@@ -186,6 +121,7 @@ function toggleConnection() {
         connectionPanel.style.display === "none" ? "block" : "none";
 }
 
+/* --- CONNECTION CODE (UNCHANGED) --- */
 async function connect() {
     save();
     socket = new WebSocket(`ws://${ip.value}:${port.value}`);
@@ -232,22 +168,29 @@ async function connect() {
 function disconnect() {
     socket?.close();
 }
+/* --- END CONNECTION CODE --- */
 
-function hotkey(name) {
+/* --- SEND SOURCE CONTROL COMMANDS --- */
+function sendCommand(cmd) {
     if (!identified) return;
-    socket.send(JSON.stringify({
+
+    save();
+    const data = {
         op: 6,
         d: {
-            requestType: "TriggerHotkeyByName",
-            requestId: crypto.randomUUID(),
-            requestData: { hotkeyName: name }
+            requestType: "CallVendorRequest",
+            requestData: {
+                vendorName: "lua",
+                requestType: "handle_command",
+                requestData: {
+                    cmd,
+                    scene: scene.value,
+                    source: source.value
+                }
+            }
         }
-    }));
-}
-
-function setPeriod() {
-    if (!identified) return;
-    hotkey(periodSelect.value);
+    };
+    socket.send(JSON.stringify(data));
 }
 </script>
 
