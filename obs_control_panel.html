@@ -6,7 +6,8 @@
 <style>
 body { font-family: sans-serif; background:#111; color:#fff; text-align:center; }
 button { margin:5px; padding:10px 15px; font-size:16px; }
-input { margin:5px; }
+input { margin:5px; padding:5px; font-size:14px; width:150px; }
+#status { margin-top:10px; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -14,9 +15,11 @@ input { margin:5px; }
 <h2>OBS WebSocket Connect</h2>
 
 <div id="connect">
-    <input id="ip" placeholder="ws://localhost:4455" value="ws://localhost:4455"><br>
+    <input id="ip" placeholder="IP Address"><br>
+    <input id="port" placeholder="Port"><br>
     <input id="password" placeholder="Password" type="password"><br>
     <button onclick="connect()">Connect</button>
+    <div id="status">Not connected</div>
 </div>
 
 <div id="controls" style="display:none;">
@@ -36,27 +39,63 @@ input { margin:5px; }
 <script>
 let ws;
 
+// Load saved values or defaults
+window.onload = () => {
+    document.getElementById("ip").value = localStorage.getItem("ws_ip") || "10.111.0.61";
+    document.getElementById("port").value = localStorage.getItem("ws_port") || "4455";
+    document.getElementById("password").value = localStorage.getItem("ws_password") || "";
+    document.getElementById("scene").value = localStorage.getItem("scene_name") || "Camera Scene";
+    document.getElementById("source").value = localStorage.getItem("source_name") || "Atem Mini Pro";
+    
+    // Auto-connect on dock load
+    connect();
+};
+
 function connect() {
-    ws = new WebSocket(document.getElementById("ip").value);
+    const ip = document.getElementById("ip").value;
+    const port = document.getElementById("port").value;
+    const password = document.getElementById("password").value;
+
+    const url = `ws://${ip}:${port}`;
+    ws = new WebSocket(url);
 
     ws.onopen = () => {
-        ws.send(JSON.stringify({
-            op: 1,
-            d: { rpcVersion: 1 }
-        }));
+        document.getElementById("status").innerText = "Connected to OBS!";
+        localStorage.setItem("ws_ip", ip);
+        localStorage.setItem("ws_port", port);
+        localStorage.setItem("ws_password", password);
+
+        // Send handshake (ignore password for now, obs-websocket v5 can handle auth if needed)
+        ws.send(JSON.stringify({ op: 1, d: { rpcVersion: 1 } }));
     };
 
     ws.onmessage = (e) => {
         const msg = JSON.parse(e.data);
-
         if (msg.op === 2) {
             document.getElementById("connect").style.display = "none";
             document.getElementById("controls").style.display = "block";
         }
     };
+
+    ws.onerror = () => {
+        document.getElementById("status").innerText = "Connection error!";
+    };
+
+    ws.onclose = () => {
+        document.getElementById("status").innerText = "Disconnected!";
+        document.getElementById("connect").style.display = "block";
+        document.getElementById("controls").style.display = "none";
+    };
 }
 
 function send(cmd) {
+    const scene = document.getElementById("scene").value;
+    const source = document.getElementById("source").value;
+
+    // Save latest values
+    localStorage.setItem("scene_name", scene);
+    localStorage.setItem("source_name", source);
+
     ws.send(JSON.stringify({
         op: 6,
         d: {
@@ -64,11 +103,7 @@ function send(cmd) {
             requestData: {
                 vendorName: "lua",
                 requestType: "handle_command",
-                requestData: {
-                    cmd: cmd,
-                    scene: document.getElementById("scene").value,
-                    source: document.getElementById("source").value
-                }
+                requestData: { cmd, scene, source }
             }
         }
     }));
