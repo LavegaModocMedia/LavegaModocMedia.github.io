@@ -1,7 +1,7 @@
 obs = obslua
 
 -- Configuration
-scene_name = "Camera Scene"
+scene_name = "Camera Scene"  -- Used if Studio Mode is off
 source_name = "Atem Mini Pro"
 
 move_speed = 5
@@ -22,13 +22,13 @@ right_hotkey = nil
 function move_source()
     if not is_enabled then return end
 
-    -- Move in Program (live) scene
+    -- Always move in Program (live) scene
     local program_scene_source = obs.obs_frontend_get_current_program_scene()
-    if program_scene_source then
+    if program_scene_source ~= nil then
         local program_scene = obs.obs_scene_from_source(program_scene_source)
-        if program_scene then
+        if program_scene ~= nil then
             local item = obs.obs_scene_find_source(program_scene, source_name)
-            if item then
+            if item ~= nil then
                 local pos = obs.vec2()
                 obs.obs_sceneitem_get_pos(item, pos)
 
@@ -48,18 +48,17 @@ function move_source()
         obs.obs_source_release(program_scene_source)
     end
 
-    -- Also move in Preview scene if Studio Mode is active
+    -- Optional: Also move in preview scene if Studio Mode is active
     if obs.obs_frontend_preview_program_mode_active() then
         local preview_scene_source = obs.obs_frontend_get_current_preview_scene()
-        if preview_scene_source then
+        if preview_scene_source ~= nil then
             local preview_scene = obs.obs_scene_from_source(preview_scene_source)
-            if preview_scene then
+            if preview_scene ~= nil then
                 local item = obs.obs_scene_find_source(preview_scene, source_name)
-                if item then
+                if item ~= nil then
                     local pos = obs.vec2()
                     obs.obs_sceneitem_get_pos(item, pos)
 
-                    -- Apply same movement
                     if left_pressed then
                         pos.x = pos.x - current_speed
                     elseif right_pressed then
@@ -88,7 +87,7 @@ end
 
 -- Script UI
 function script_description()
-    return "Move 'Atem Mini Pro' left/right in 'Camera Scene'. Works continuously in Program (live) scene and Preview in Studio Mode. Use hotkeys to control movement."
+    return "Move 'Atem Mini Pro' left/right continuously in the live Program scene. Updates Preview scene in Studio Mode as well. Use hotkeys to control movement."
 end
 
 function script_properties()
