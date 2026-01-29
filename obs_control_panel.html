@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OBS Source Controller</title>
+<style>
+body { font-family: sans-serif; background:#111; color:#fff; text-align:center; }
+button { margin:5px; padding:10px 15px; font-size:16px; }
+input { margin:5px; }
+</style>
+</head>
+<body>
+
+<h2>OBS WebSocket Connect</h2>
+
+<div id="connect">
+    <input id="ip" placeholder="ws://localhost:4455" value="ws://localhost:4455"><br>
+    <input id="password" placeholder="Password" type="password"><br>
+    <button onclick="connect()">Connect</button>
+</div>
+
+<div id="controls" style="display:none;">
+    <input id="scene" placeholder="Scene Name"><br>
+    <input id="source" placeholder="Source Name"><br><br>
+
+    <button onclick="send('up')">⬆</button><br>
+    <button onclick="send('left')">⬅</button>
+    <button onclick="send('right')">➡</button><br>
+    <button onclick="send('down')">⬇</button><br><br>
+
+    <button onclick="send('bigger')">➕ Bigger</button>
+    <button onclick="send('smaller')">➖ Smaller</button><br><br>
+    <button onclick="send('reset')">🔄 Reset</button>
+</div>
+
+<script>
+let ws;
+
+function connect() {
+    ws = new WebSocket(document.getElementById("ip").value);
+
+    ws.onopen = () => {
+        ws.send(JSON.stringify({
+            op: 1,
+            d: { rpcVersion: 1 }
+        }));
+    };
+
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+
+        if (msg.op === 2) {
+            document.getElementById("connect").style.display = "none";
+            document.getElementById("controls").style.display = "block";
+        }
+    };
+}
+
+function send(cmd) {
+    ws.send(JSON.stringify({
+        op: 6,
+        d: {
+            requestType: "CallVendorRequest",
+            requestData: {
+                vendorName: "lua",
+                requestType: "handle_command",
+                requestData: {
+                    cmd: cmd,
+                    scene: document.getElementById("scene").value,
+                    source: document.getElementById("source").value
+                }
+            }
+        }
+    }));
+}
+</script>
+</body>
+</html>
