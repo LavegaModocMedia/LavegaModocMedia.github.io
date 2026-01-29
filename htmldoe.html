@@ -42,16 +42,6 @@ label {
     opacity: 0.8;
 }
 
-input {
-    width: 100%;
-    padding: 6px;
-    margin-bottom: 6px;
-    background: #111;
-    color: white;
-    border: 1px solid var(--border);
-    border-radius: 0;
-}
-
 button {
     width: 100%;
     padding: 8px;
@@ -73,24 +63,29 @@ button:hover { background: #4a4a4a; }
 .disconnected { color: #ff5555; }
 </style>
 </head>
-
 <body>
 
 <div id="controls" class="controls">
 
     <div class="panel">
-        <label>Source Position</label>
-        <div class="buttons">
-            <button onclick="move('up')">⬆ Up</button>
-            <button onclick="move('down')">⬇ Down</button>
-            <button onclick="move('left')">⬅ Left</button>
-            <button onclick="move('right')">➡ Right</button>
-        </div>
+        <label>Source Movement</label>
+        <button onclick="move('up')">⬆ Up</button>
+        <button onclick="move('down')">⬇ Down</button>
+        <button onclick="move('left')">⬅ Left</button>
+        <button onclick="move('right')">➡ Right</button>
+
         <label>Zoom</label>
-        <div class="buttons">
-            <button onclick="zoom('in')">➕ Zoom In</button>
-            <button onclick="zoom('out')">➖ Zoom Out</button>
-        </div>
+        <button onclick="zoom('in')">➕ Zoom In</button>
+        <button onclick="zoom('out')">➖ Zoom Out</button>
+    </div>
+
+    <div class="panel">
+        <label>Source Name</label>
+        <input id="source" placeholder="Enter source name">
+        <label>Move Step (px)</label>
+        <input id="moveStep" type="number" value="10">
+        <label>Zoom Step</label>
+        <input id="zoomStep" type="number" step="0.01" value="0.1">
     </div>
 
 </div>
@@ -98,7 +93,6 @@ button:hover { background: #4a4a4a; }
 <button class="toggle" onclick="toggleConnection()">⚙ Connection</button>
 
 <div id="connectionPanel" class="panel">
-
     <label>Server IP</label>
     <input id="ip" placeholder="localhost">
 
@@ -129,6 +123,7 @@ async function connect() {
     socket.onmessage = async e => {
         const m = JSON.parse(e.data);
 
+        // Authentication handshake
         if (m.op === 0) {
             let auth = {};
             if (m.d.authentication) {
@@ -148,6 +143,7 @@ async function connect() {
             socket.send(JSON.stringify({ op: 1, d: { rpcVersion: 1, ...auth } }));
         }
 
+        // Connection identified
         if (m.op === 2) {
             identified = true;
             status.textContent = "Connected";
@@ -167,28 +163,57 @@ async function connect() {
 
 function disconnect() { socket?.close(); }
 
+// Send move command
 function move(direction) {
     if (!identified) return;
-    socket.send(JSON.stringify({
+    const source = document.getElementById("source").value;
+    const step = parseFloat(document.getElementById("moveStep").value);
+
+    const request = {
         "op": 6,
         "d": {
-            "requestType": "MoveSource",
+            "requestType": "SetSceneItemTransform",
             "requestId": crypto.randomUUID(),
-            "requestData": { "direction": direction }
+            "requestData": {
+                "scene-name": obsGetCurrentScene(),
+                "item": source,
+                "move": direction,
+                "step": step
+            }
         }
-    }));
+    };
+
+    socket.send(JSON.stringify(request));
 }
 
+// Send zoom command
 function zoom(action) {
     if (!identified) return;
-    socket.send(JSON.stringify({
+    const source = document.getElementById("source").value;
+    const step = parseFloat(document.getElementById("zoomStep").value);
+
+    const request = {
         "op": 6,
         "d": {
-            "requestType": "ZoomSource",
+            "requestType": "SetSceneItemTransform",
             "requestId": crypto.randomUUID(),
-            "requestData": { "action": action }
+            "requestData": {
+                "scene-name": obsGetCurrentScene(),
+                "item": source,
+                "zoom": action,
+                "step": step
+            }
         }
-    }));
+    };
+
+    socket.send(JSON.stringify(request));
+}
+
+// Helper: get current scene name
+function obsGetCurrentScene() {
+    // For simplicity, you could hardcode your scene name here,
+    // or implement OBS WebSocket call to get it dynamically
+    return "Scene";
 }
 </script>
 
