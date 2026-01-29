@@ -1,57 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>OBS Camera Remote</title>
-
-<style>
-body {
-    background:#111;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-}
-
-button {
-    width:100px;
-    height:60px;
-    font-size:18px;
-    margin:5px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>OBS Camera Controller</title>
+  <style>
+    body { background:#111; color:#fff; font-family:sans-serif; }
+    button { margin:5px; padding:10px; }
+  </style>
 </head>
-
 <body>
 
-<h1>OBS Camera Controller</h1>
+<h2>OBS Camera Controller</h2>
 
-<div>
-    <button onclick="send('up')">▲</button>
-</div>
+<button onclick="zoom(1.05)">Zoom In</button>
+<button onclick="zoom(0.95)">Zoom Out</button><br>
 
-<div>
-    <button onclick="send('left')">◀</button>
-    <button onclick="send('down')">▼</button>
-    <button onclick="send('right')">▶</button>
-</div>
-
-<br>
-
-<div>
-    <button onclick="send('zoom_in')">Zoom +</button>
-    <button onclick="send('zoom_out')">Zoom -</button>
-</div>
+<button onclick="move(0,-20)">Up</button><br>
+<button onclick="move(-20,0)">Left</button>
+<button onclick="move(20,0)">Right</button><br>
+<button onclick="move(0,20)">Down</button>
 
 <script>
-let socket = new WebSocket("ws://127.0.0.1:4455");
+const ws = new WebSocket("ws://localhost:4455");
 
-socket.onopen = () => {
-    console.log("Connected");
+const SOURCE_NAME = "Camera"; // OBS source name
+
+let scale = 1.0;
+let x = 0;
+let y = 0;
+
+ws.onopen = async () => {
+  console.log("Connected to OBS");
 };
 
-function send(cmd){
-    socket.send(cmd);
+function send(requestType, requestData) {
+  ws.send(JSON.stringify({
+    op: 6,
+    d: {
+      requestType,
+      requestId: crypto.randomUUID(),
+      requestData
+    }
+  }));
+}
+
+function zoom(factor) {
+  scale *= factor;
+  updateTransform();
+}
+
+function move(dx, dy) {
+  x += dx;
+  y += dy;
+  updateTransform();
+}
+
+function updateTransform() {
+  send("SetSceneItemTransform", {
+    sceneName: "Current Program Scene",
+    sceneItemId: 1, // see note below
+    sceneItemTransform: {
+      scaleX: scale,
+      scaleY: scale,
+      positionX: x,
+      positionY: y
+    }
+  });
 }
 </script>
-
 </body>
 </html>
