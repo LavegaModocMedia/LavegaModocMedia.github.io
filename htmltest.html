@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OBS Dock</title>
+
+<style>
+:root {
+    --bg: #2f2f2f;
+    --panel: #3c3c3c;
+    --text: #ffffff;
+    --success: #4caf50;
+    --danger: #ff5555;
+    --border: #555;
+    --radius: 10px;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.controls {
+    display: none;
+}
+
+.counter-title {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 6px;
+}
+
+.buttons {
+    display: flex;
+    gap: 6px;
+}
+
+button {
+    flex: 1;
+    padding: 8px;
+    background: #3a3a3a;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover { background: #4a4a4a; }
+
+.inc { background: #2e7d32; }
+.dec { background: #c62828; }
+.reset { background: #6d6d6d; }
+
+.toggle {
+    background: #314bb1;
+    border: none;
+}
+
+input, select {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 6px;
+    background: #111;
+    color: white;
+    border: 1px solid var(--border);
+    border-radius: 0;
+}
+
+.status {
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.connected { color: var(--success); }
+.disconnected { color: var(--danger); }
+</style>
+</head>
+
+<body>
+
+<div id="controls" class="controls">
+
+    <div class="panel">
+        <div class="counter-title">LV Score</div>
+        <div class="buttons">
+            <button class="inc" onclick="hotkey('counter1_inc')">➕</button>
+            <button class="dec" onclick="hotkey('counter1_dec')">➖</button>
+            <button class="reset" onclick="hotkey('counter1_reset')">🔄</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="counter-title">Opponent Score</div>
+        <div class="buttons">
+            <button class="inc" onclick="hotkey('counter2_inc')">➕</button>
+            <button class="dec" onclick="hotkey('counter2_dec')">➖</button>
+            <button class="reset" onclick="hotkey('counter2_reset')">🔄</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="counter-title">Quarter</div>
+        <select id="periodSelect" onchange="setPeriod()">
+            <option value="period_1">1st</option>
+            <option value="period_2">2nd</option>
+            <option value="period_half">Half</option>
+            <option value="period_3">3rd</option>
+            <option value="period_4">4th</option>
+        </select>
+    </div>
+
+</div>
+
+<button class="toggle" onclick="toggleConnection()">⚙ Connection</button>
+
+<div id="connectionPanel" class="panel">
+
+    <label>Server Port</label>
+    <input id="port" placeholder="4455">
+
+    <label>Password</label>
+    <input id="password" type="password">
+
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+
+    <div id="status" class="status disconnected">Disconnected</div>
+</div>
+
+<script>
+let socket;
+let identified = false;
+const STORE = "obsDualCounter";
+
+/* RESTORE SAVED CONNECTION */
+(function () {
+    const s = JSON.parse(localStorage.getItem(STORE) || "{}");
+    port.value = s.port || "4455";
+    password.value = s.password || "";
+})();
+
+function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+        port: port.value,
+        password: password.value
+    }));
+}
+
+function toggleConnection() {
+    connectionPanel.style.display =
+        connectionPanel.style.display === "none" ? "block" : "none";
+}
+
+async function connect() {
+    save();
+
+    const host = window.location.hostname || "127.0.0.1";
+    const portNumber = port.value || "4455";
+
+    socket = new WebSocket(`ws://${host}:${portNumber}`);
+
+    socket.onmessage = async e => {
+        const m = JSON.parse(e.data);
+
+        if (m.op === 0) {
+            let auth = {};
+            if (m.d.authentication) {
+                const s = await crypto.subtle.digest(
+                    "SHA-256",
+                    new TextEncoder().encode(password.value + m.d.authentication.salt)
+                );
+                const sb = btoa(String.fromCharCode(...new Uint8Array(s)));
+                const r = await crypto.subtle.digest(
+                    "SHA-256",
+                    new TextEncoder().encode(sb + m.d.authentication.challenge)
+                );
+                auth.authentication = btoa(
+                    String.fromCharCode(...new Uint8Array(r))
+                );
+            }
+            socket.send(JSON.stringify({ op: 1, d: { rpcVersion: 1, ...auth } }));
+        }
+
+        if (m.op === 2) {
+            identified = true;
+            status.textContent = "Connected";
+            status.className = "status connected";
+            connectionPanel.style.display = "none";
+            controls.style.display = "block";
+        }
+    };
+
+    socket.onclose = () => {
+        identified = false;
+        status.textContent = "Disconnected";
+        status.className = "status disconnected";
+        controls.style.display = "none";
+    };
+}
+
+function disconnect() {
+    socket?.close();
+}
+
+function hotkey(name) {
+    if (!identified) return;
+    socket.send(JSON.stringify({
+        op: 6,
+        d: {
+            requestType: "TriggerHotkeyByName",
+            requestId: crypto.randomUUID(),
+            requestData: { hotkeyName: name }
+        }
+    }));
+}
+
+function setPeriod() {
+    if (!identified) return;
+    hotkey(periodSelect.value);
+}
+</script>
+
+</body>
+</html>
