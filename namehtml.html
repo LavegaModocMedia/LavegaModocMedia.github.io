@@ -38,7 +38,7 @@ input, select { width: 100%; padding: 6px; margin-bottom: 6px; background: #111;
 <div id="controls" class="controls">
 
     <div class="panel">
-        <div class="counter-title">LV Score</div>
+        <div class="counter-title">La Vega Score</div>
         <div class="buttons">
             <button class="inc" onclick="hotkey('counter1_inc')">➕</button>
             <button class="dec" onclick="hotkey('counter1_dec')">➖</button>
@@ -47,7 +47,7 @@ input, select { width: 100%; padding: 6px; margin-bottom: 6px; background: #111;
     </div>
 
     <div class="panel">
-        <!-- ID ADDED HERE -->
+        <!-- ID ADDED FOR JS UPDATE -->
         <div class="counter-title" id="opponentTitle">Opponent Score</div>
         <div class="buttons">
             <button class="inc" onclick="hotkey('counter2_inc')">➕</button>
@@ -86,6 +86,7 @@ let socket;
 let identified = false;
 const STORE = "obsDualCounter";
 
+/* RESTORE SAVED CONNECTION */
 (function () {
     const s = JSON.parse(localStorage.getItem(STORE) || "{}");
     port.value = s.port || "4455";
@@ -113,7 +114,7 @@ function requestOpponentName() {
             requestType: "GetInputSettings",
             requestId: crypto.randomUUID(),
             requestData: {
-                inputName: "Opponent Name"  // MUST MATCH YOUR OBS SOURCE NAME
+                inputName: "Opponent Name"  // Must match your OBS source name
             }
         }
     }));
@@ -154,21 +155,30 @@ async function connect() {
             connectionPanel.style.display = "none";
             controls.style.display = "block";
 
-            // GET NAME WHEN CONNECTED
+            // Get name when connected
             requestOpponentName();
         }
 
         // RESPONSE TO GetInputSettings
         if (m.op === 7 && m.d.requestType === "GetInputSettings") {
-            const text = m.d.responseData.inputSettings.text;
+            let text = m.d.responseData.inputSettings.text;
+
+            // REMOVE "HS" ONLY IN DOCK
+            text = text.replace(/\bHS\b/g, "").trim();
+
             document.getElementById("opponentTitle").textContent = text + " Score";
         }
 
         // AUTO UPDATE WHEN NAME CHANGES IN OBS
         if (m.op === 5 && m.d.eventType === "InputSettingsChanged") {
             if (m.d.eventData.inputName === "Opponent Name") {
+                let text = m.d.eventData.inputSettings.text;
+
+                // REMOVE "HS" ONLY IN DOCK
+                text = text.replace(/\bHS\b/g, "").trim();
+
                 document.getElementById("opponentTitle").textContent =
-                    m.d.eventData.inputSettings.text + " Score";
+                    text + " Score";
             }
         }
     };
