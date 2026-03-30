@@ -1,27 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* 🔑 hides anything outside viewport */
-      height: 100%;
-    }
+<meta charset="UTF-8">
+<title>Uno Overlay Dock</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+  }
 
-    iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 120vw;   /* 🔑 make it bigger than screen */
-      height: 400vh;  /* 🔑 extend beyond screen */
-      border: none;
-    }
-  </style>
+  .container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  iframe {
+    position: absolute;
+    top: -80px;   /* adjust to crop top ads */
+    left: 0;
+    width: 100%;
+    height: calc(100% + 120px); /* compensate for crop */
+    border: none;
+  }
+</style>
 </head>
 <body>
 
-<iframe src="https://app.overlays.uno/control/1jSHsbFFr4GtJg1KVc5FhO"></iframe>
+<div class="container">
+  <iframe src="https://lavegamodocmedia.github.io/unoverlay.html"></iframe>
+</div>
 
 </body>
 </html>
