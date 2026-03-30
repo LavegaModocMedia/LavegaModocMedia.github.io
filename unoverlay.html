@@ -1,37 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Uno Overlay Dock</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: #000;
+    background: black;
   }
 
-  .container {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
+  .viewport {
+    width: 1280px;   /* your desired fixed size */
+    height: 720px;
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   iframe {
-    position: absolute;
-    top: -80px;   /* adjust to crop top ads */
-    left: 0;
     width: 100%;
-    height: calc(100% + 120px); /* compensate for crop */
+    height: 100%;
     border: none;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="viewport" id="vp">
   <iframe src="https://lavegamodocmedia.github.io/unoverlay.html"></iframe>
 </div>
+
+<script>
+  function scaleToFit() {
+    const vp = document.getElementById('vp');
+    const scaleX = window.innerWidth / 1280;
+    const scaleY = window.innerHeight / 720;
+    const scale = Math.min(scaleX, scaleY);
+
+    vp.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleToFit);
+  scaleToFit();
+</script>
 
 </body>
 </html>
